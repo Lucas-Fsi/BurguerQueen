@@ -41,7 +41,6 @@ BurguerQueen/
 │   └── PagamentosController.cs
 │
 ├── Models/                      # Entidades de domínio
-│   ├── EntidadeBase.cs          # Classe base (Id) - herança
 │   ├── Produto.cs
 │   ├── Lanche.cs
 │   ├── Bebida.cs
