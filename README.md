@@ -23,7 +23,7 @@ Todas as telas exibem **mensagens amigáveis** de sucesso e de erro, e as regras
 
 ## 🛠 Tecnologias
 
-| Framework | ASP.NET Core MVC (.NET 8) |
+| Framework | ASP.NET Core MVC (.NET 10) |
 | Linguagem | C# |
 | Acesso a dados | Dapper|
 
