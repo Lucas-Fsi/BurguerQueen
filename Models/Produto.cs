@@ -17,6 +17,11 @@ public abstract class Produto
     public decimal Preco {get; private set; }
     public TipoProduto Tipo {get; protected set;}
 
+    //construtor protegido para que apenas as classes filhas
+    // possam instanciar um produto usando ': base(***)'
+    // tambem garente que o produto seja criado com um estado válido,
+    // pois obriga a passar os parametros obrigatórios
+
     protected Produto(string nome, decimal preco, TipoProduto tipo, int id = 0)
     {
         if (id < 0)
@@ -32,6 +37,7 @@ public abstract class Produto
         DefinirNome(nome);
         DefinirPreco(preco);
     }
+    
     //metodos do dominio para validar e definir o nome e preco do produto
     //conforme as regras de negócio
     public void DefinirNome(string nome)
