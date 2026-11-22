@@ -6,7 +6,8 @@ namespace BurguerQueen.Models;
 public class Pedido 
 {
     private readonly List<ItemPedido> _itens = new();
-    public int? ClienteId { get; private set; }  
+
+    public int? ClienteId { get; private set; } 
     public StatusPedido Status { get; private set; }
     public DateTime DataCriacao { get; private set; }
     public IReadOnlyCollection<ItemPedido> Itens => _itens.AsReadOnly();

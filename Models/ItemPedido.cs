@@ -10,7 +10,7 @@ public class ItemPedido
     public decimal PrecoUnitario { get; private set; }
     public decimal Subtotal => Quantidade * PrecoUnitario;
 
-    protected ItemPedido() { } 
+    protected ItemPedido() { }
 
     public ItemPedido(int produtoId, string nomeProduto, decimal precoUnitario, int quantidade)
     {
