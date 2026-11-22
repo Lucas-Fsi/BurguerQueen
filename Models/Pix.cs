@@ -7,7 +7,7 @@ public class Pix : Pagamento
     public string Chave { get; private set; }
     public string CodigoTransacao { get; private set; }
 
-    public Pix(decimal valor, string chave, string codigoTransacao) : base(valor)
+    public Pix(int pedidoId, decimal valor, string chave, string codigoTransacao) : base(pedidoId, valor)
     {
         Chave = chave;
 

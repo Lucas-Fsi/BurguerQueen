@@ -10,7 +10,7 @@ public class Cartao : Pagamento
     public string Bandeira { get; private set; }
     public string CodigoAutorizacao { get; private set; }
 
-    public Cartao(decimal valor, int parcelas, string bandeira, string codigoAutorizacao) : base(valor)
+    public Cartao(int pedidoId, decimal valor, int parcelas, string bandeira, string codigoAutorizacao) : base(pedidoId, valor)
     {
         Parcelas = parcelas;
 

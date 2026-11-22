@@ -6,7 +6,7 @@ public class Dinheiro : Pagamento
 {
     public decimal ValorRecebido { get; private set; }
 
-    public Dinheiro(decimal valor, decimal valorRecebido) : base(valor)
+    public Dinheiro(int pedidoId, decimal valor, decimal valorRecebido) : base(pedidoId, valor)
     {
         ValorRecebido = valorRecebido;
 
