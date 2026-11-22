@@ -1,4 +1,4 @@
-namespace MeuProjetoMVC.Models.Enums;
+namespace BurguerQueen.Models.Enums;
 
 public static class StatusPedidoExtensions
 {

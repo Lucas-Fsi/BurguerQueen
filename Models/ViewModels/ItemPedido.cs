@@ -1,6 +1,6 @@
-using MeuProjetoMVC.Exceptions;
+using BurguerQueen.Exceptions;
 
-namespace MeuProjetoMVC.Models;
+namespace BurguerQueen.Models;
 
 public class ItemPedido 
 {

@@ -1,7 +1,7 @@
-using MeuProjetoMVC.Exceptions;
-using MeuProjetoMVC.Models.Enums;
+using BurguerQueen.Exceptions;
+using BurguerQueen.Models.Enums;
 
-namespace MeuProjetoMVC.Models;
+namespace BurguerQueen.Models;
 
 public class Pedido 
 {

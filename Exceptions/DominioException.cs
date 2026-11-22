@@ -1,4 +1,4 @@
-namespace MeuProjetoMVC.Exceptions;
+namespace BurguerQueen.Exceptions;
 
 public class DominioException : Exception
 {
