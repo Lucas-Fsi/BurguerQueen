@@ -7,6 +7,8 @@ public class Pedido
 {
     private readonly List<ItemPedido> _itens = new();
 
+
+    public int Id { get; private set; }
     public int? ClienteId { get; private set; } 
     public StatusPedido Status { get; private set; }
     public DateTime DataCriacao { get; private set; }
