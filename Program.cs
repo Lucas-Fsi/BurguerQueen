@@ -1,8 +1,13 @@
+using BurguerQueen.Repositories.Dapper;
+using BurguerQueen.Repositories.Interfaces;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+//injeção de dependencias
+builder.Services.AddScoped<IProdutoRepository, ProdutoRepository>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
