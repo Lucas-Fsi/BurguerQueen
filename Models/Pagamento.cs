@@ -7,16 +7,22 @@ namespace BurguerQueen.Models;
 public abstract class Pagamento
 {
     private static readonly CultureInfo PtBr = new("pt-BR");
+
     public int Id { get; private set; }
+    public int PedidoId { get; private set; }
     public decimal Valor { get; protected set; }
     public DateTime DataHora { get; protected set; }
     public StatusPagamento Status { get; protected set; } = StatusPagamento.Pendente;
 
-    protected Pagamento(decimal valor)
+    protected Pagamento(int pedidoId, decimal valor)
     {
+        if (pedidoId <= 0)
+            throw new DominioException("O pagamento precisa estar vinculado a um pedido.");
+
         if (valor <= 0)
             throw new DominioException("O valor do pagamento deve ser maior que zero.");
 
+        PedidoId = pedidoId;
         Valor = valor;
         DataHora = DateTime.Now;
     }
@@ -46,5 +52,6 @@ public abstract class Pagamento
     }
 
     public abstract string Descrever();
+
     protected static string FormatarValor(decimal valor) => valor.ToString("C", PtBr);
 }
