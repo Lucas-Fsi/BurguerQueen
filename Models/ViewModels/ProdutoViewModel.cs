@@ -81,7 +81,7 @@ public class ProdutoViewModel
     //METODO AUXILIAR estático para fazer o caminho inverso (Editar)
     //recebe a entidade via Dapper e preenche o viewmodel
 
-    public static ProdutoViewModel DeEndidade(Produto produto)
+    public static ProdutoViewModel DeEntidade(Produto produto)
     {
         var viewModel = new ProdutoViewModel
         {
