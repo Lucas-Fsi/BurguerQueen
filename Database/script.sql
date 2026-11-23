@@ -46,3 +46,28 @@ INSERT INTO Produtos (Nome, Preco, Tipo, Descricao, Adicionais, Tamanho) VALUES
 ('Refrigerante Guaraná', 7.00, 2, NULL, NULL, 350),
 ('Suco Natural de Laranja', 11.90, 2, NULL, NULL, 500),
 ('Milkshake de Chocolate', 18.50, 2, NULL, NULL, 400);
+
+
+-- =====================
+-- Tabela de pagamentos (uma tabela para todas as formas de pagamento)
+-- Forma:      1 = Dinheiro / 2 = Pix / 3 = Cartao
+-- Status:     0 = Pendente / 1 = Aprovado / 2 = Cancelado / 3 = Estornado
+-- TipoCartao: 1 = Debito / 2 = Credito
+-- Colunas especificas ficam NULL quando nao pertencem a forma do pagamento
+-- =====================
+CREATE TABLE IF NOT EXISTS Pagamentos (
+    Id INTEGER PRIMARY KEY AUTOINCREMENT,
+    PedidoId INTEGER NOT NULL,
+    Forma INTEGER NOT NULL CHECK (Forma IN (1, 2, 3)),
+    Valor REAL NOT NULL CHECK (Valor > 0),
+    DataHora TEXT NOT NULL,
+    Status INTEGER NOT NULL CHECK (Status IN (0, 1, 2, 3)),
+    ValorRecebido REAL NULL,
+    Chave TEXT NULL,
+    CodigoTransacao TEXT NULL,
+    TipoCartao INTEGER NULL CHECK (TipoCartao IN (1, 2)),
+    Parcelas INTEGER NULL,
+    Bandeira TEXT NULL,
+    CodigoAutorizacao TEXT NULL,
+    FOREIGN KEY (PedidoId) REFERENCES Pedidos (Id)
+);

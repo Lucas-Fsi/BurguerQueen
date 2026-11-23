@@ -1,4 +1,5 @@
 using BurguerQueen.Exceptions;
+using BurguerQueen.Models.Enums;
 
 namespace BurguerQueen.Models;
 
@@ -6,7 +7,15 @@ public class Dinheiro : Pagamento
 {
     public decimal ValorRecebido { get; private set; }
 
-    public Dinheiro(int pedidoId, decimal valor, decimal valorRecebido) : base(pedidoId, valor)
+    public override FormaPagamento Forma => FormaPagamento.Dinheiro;
+
+    public Dinheiro(
+        int pedidoId,
+        decimal valor,
+        decimal valorRecebido,
+        int id = 0,
+        DateTime? dataHora = null,
+        StatusPagamento status = StatusPagamento.Pendente) : base(pedidoId, valor, id, dataHora, status)
     {
         ValorRecebido = valorRecebido;
 

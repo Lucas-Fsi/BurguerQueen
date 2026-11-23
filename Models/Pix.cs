@@ -1,13 +1,23 @@
 using BurguerQueen.Exceptions;
+using BurguerQueen.Models.Enums;
 
 namespace BurguerQueen.Models;
 
 public class Pix : Pagamento
 {
     public string Chave { get; private set; }
-    public string CodigoTransacao { get; private set; }
+    public string CodigoTransacao { get; private set; } = string.Empty;
 
-    public Pix(int pedidoId, decimal valor, string chave, string codigoTransacao) : base(pedidoId, valor)
+    public override FormaPagamento Forma => FormaPagamento.Pix;
+
+    public Pix(
+        int pedidoId,
+        decimal valor,
+        string chave,
+        string codigoTransacao,
+        int id = 0,
+        DateTime? dataHora = null,
+        StatusPagamento status = StatusPagamento.Pendente) : base(pedidoId, valor, id, dataHora, status)
     {
         Chave = chave;
 

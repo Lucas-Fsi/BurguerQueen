@@ -1,0 +1,93 @@
+@using BurguerQueen.Models.Enums
+@model BurguerQueen.Models.ViewModels.PagamentoViewModel
+@{
+    ViewData["Title"] = "Registrar pagamento";
+}
+
+<h1>Registrar pagamento</h1>
+
+<p>
+    Pedido <strong>#@Model.PedidoId</strong> &mdash; Total a pagar:
+    <strong>@Model.ValorTotal.ToString("C")</strong>
+</p>
+
+<form asp-action="Create" method="post" style="max-width: 520px">
+    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+    <input type="hidden" asp-for="PedidoId" />
+
+    <div class="mb-3">
+        <label asp-for="Forma" class="form-label"></label>
+        <select asp-for="Forma" id="forma" class="form-select"
+                asp-items="Html.GetEnumSelectList<FormaPagamento>()">
+            <option value="">Selecione...</option>
+        </select>
+        <span asp-validation-for="Forma" class="text-danger"></span>
+    </div>
+
+    @* Dinheiro (valor 1) *@
+    <div data-forma="1" class="d-none">
+        <div class="mb-3">
+            <label asp-for="ValorRecebido" class="form-label"></label>
+            <input asp-for="ValorRecebido" type="text" inputmode="decimal" class="form-control" />
+            <span asp-validation-for="ValorRecebido" class="text-danger"></span>
+        </div>
+    </div>
+
+    @* Pix (valor 2) *@
+    <div data-forma="2" class="d-none">
+        <div class="mb-3">
+            <label asp-for="Chave" class="form-label"></label>
+            <input asp-for="Chave" class="form-control" />
+            <span asp-validation-for="Chave" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="CodigoTransacao" class="form-label"></label>
+            <input asp-for="CodigoTransacao" class="form-control" />
+            <span asp-validation-for="CodigoTransacao" class="text-danger"></span>
+        </div>
+    </div>
+
+    @* Cartão (valor 3) *@
+    <div data-forma="3" class="d-none">
+        <div class="mb-3">
+            <label asp-for="TipoCartao" class="form-label"></label>
+            <select asp-for="TipoCartao" class="form-select"
+                    asp-items="Html.GetEnumSelectList<TipoCartao>()">
+                <option value="">Selecione...</option>
+            </select>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Parcelas" class="form-label"></label>
+            <input asp-for="Parcelas" type="number" min="1" max="12" class="form-control" />
+            <div class="form-text">Débito aceita apenas 1 parcela.</div>
+        </div>
+        <div class="mb-3">
+            <label asp-for="Bandeira" class="form-label"></label>
+            <input asp-for="Bandeira" class="form-control" />
+            <span asp-validation-for="Bandeira" class="text-danger"></span>
+        </div>
+        <div class="mb-3">
+            <label asp-for="CodigoAutorizacao" class="form-label"></label>
+            <input asp-for="CodigoAutorizacao" class="form-control" />
+            <span asp-validation-for="CodigoAutorizacao" class="text-danger"></span>
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Registrar pagamento</button>
+    <a asp-controller="Pedidos" asp-action="Details" asp-route-id="@Model.PedidoId" class="btn btn-outline-secondary">Voltar</a>
+</form>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        // Mostra só os campos da forma de pagamento escolhida
+        const forma = document.getElementById('forma');
+        function atualizarCampos() {
+            document.querySelectorAll('[data-forma]').forEach(function (bloco) {
+                bloco.classList.toggle('d-none', bloco.dataset.forma !== forma.value);
+            });
+        }
+        forma.addEventListener('change', atualizarCampos);
+        atualizarCampos();
+    </script>
+}
