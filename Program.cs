@@ -2,6 +2,7 @@ using BurguerQueen.Repositories.Dapper;
 using BurguerQueen.Repositories.Interfaces;
 using BurguerQueen.Services;
 using Microsoft.AspNetCore.Localization;
+using Microsoft.Data.Sqlite;
 using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,8 +16,24 @@ builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
 builder.Services.AddScoped<IPagamentoRepository, PagamentoRepository>();
 builder.Services.AddScoped<PagamentoService>();
 builder.Services.AddScoped<PedidoService>();
-
 var app = builder.Build();
+
+using (var conn = new SqliteConnection(builder.Configuration.GetConnectionString("DefaultConnection")))
+{
+    conn.Open();
+
+    using var check = conn.CreateCommand();
+    check.CommandText = "SELECT COUNT(*) FROM sqlite_master WHERE type = 'table' AND name = 'Produtos'";
+    var existe = (long)check.ExecuteScalar()! > 0;
+
+    if (!existe)
+    {
+        var caminho = Path.Combine(builder.Environment.ContentRootPath, "Database", "script.sql");
+        using var cmd = conn.CreateCommand();
+        cmd.CommandText = File.ReadAllText(caminho);
+        cmd.ExecuteNonQuery();
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())

@@ -1,20 +1,42 @@
 PRAGMA foreign_keys = ON;
 
 -- =====================
--- Tabela de produtos Lanches e Bebidas
--- Tipo 1 = Lanche/ Tipo 2 = Bebida
+-- Produtos (Tipo 1 = Lanche / Tipo 2 = Bebida)
 -- =====================
 CREATE TABLE IF NOT EXISTS Produtos (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    Nome TEXT NOT NULL,
-    Preco REAL NOT NULL CHECK (Preco >= 0),
-    TIPO INTEGER NOT NULL CHECK (TIPO IN (1, 2)),
-    Descricao TEXT NULL,
-    Adicional TEXT NULL,
-    Tamanho REAL Null
-)
+    Id         INTEGER PRIMARY KEY AUTOINCREMENT,
+    Nome       TEXT NOT NULL,
+    Preco      REAL NOT NULL CHECK (Preco >= 0),
+    Tipo       INTEGER NOT NULL CHECK (Tipo IN (1, 2)),
+    Descricao  TEXT NULL,
+    Adicionais TEXT NULL,
+    Tamanho    REAL NULL
+);
 
--- Insert inicial com dados para teste:
+-- =====================
+-- Pedidos
+-- =====================
+CREATE TABLE IF NOT EXISTS Pedidos (
+    Id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    ClienteId    INTEGER NULL,
+    Status       INTEGER NOT NULL DEFAULT 0,
+    DataCriacao  TEXT    NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS ItensPedido (
+    Id             INTEGER PRIMARY KEY AUTOINCREMENT,
+    PedidoId       INTEGER NOT NULL,
+    ProdutoId      INTEGER NOT NULL,
+    NomeProduto    TEXT    NOT NULL,
+    Quantidade     INTEGER NOT NULL CHECK (Quantidade > 0),
+    PrecoUnitario  REAL    NOT NULL CHECK (PrecoUnitario > 0),
+    FOREIGN KEY (PedidoId)  REFERENCES Pedidos(Id) ON DELETE CASCADE,
+    FOREIGN KEY (ProdutoId) REFERENCES Produtos(Id)
+);
+
+-- =====================
+-- Dados de teste
+-- =====================
 INSERT INTO Produtos (Nome, Preco, Tipo, Descricao, Adicionais, Tamanho) VALUES
 ('Queen Classic', 28.90, 1, 'Pão brioche, hambúrguer 150g, queijo cheddar e molho da casa', 'Bacon, Cheddar extra', NULL),
 ('Double Queen', 36.50, 1, 'Pão australiano, dois hambúrgueres 150g, queijo prato e cebola caramelizada', 'Ovo, Cebola crispy', NULL),
