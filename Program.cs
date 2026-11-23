@@ -13,6 +13,8 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+builder.Services.AddScoped<IClienteRepository, ClienteRepository>(); //injeção de dependência para o repositório de clientes
+
 app.UseHttpsRedirection();
 app.UseRouting();
 
