@@ -1,4 +1,8 @@
 namespace BurguerQueen.Exceptions;
+
+public class DominioException : Exception
+{
+    public DominioException(string mensagem) : base(mensagem)
 // exception personalizada de regra de negócio
 // herdara de System.Exception para ser lançada com throw e reconhecida com o Try-Catch
 public class DominioException : Exception
