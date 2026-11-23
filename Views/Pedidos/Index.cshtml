@@ -3,53 +3,120 @@
 @{
     ViewData["Title"] = "Pedidos";
     var filtro = (StatusPedido?)ViewBag.StatusSelecionado;
+    var listaPedidos = Model.ToList();
+
+    string PillClass(bool ativo) => ativo
+        ? "inline-flex items-center gap-xs px-md py-xs rounded-full bg-on-surface text-surface-container-lowest font-label text-label-md border border-on-surface transition-colors duration-state-change ease-state-change no-underline"
+        : "inline-flex items-center gap-xs px-md py-xs rounded-full bg-surface-container-lowest text-on-surface-variant font-label text-label-md border border-outline-variant hover:bg-surface-container-low hover:text-on-surface transition-colors duration-state-change ease-state-change no-underline";
+
+    string PedidoBadgeClasses(StatusPedido s) => s switch
+    {
+        StatusPedido.Aberto => "bg-surface-container text-on-surface",
+        StatusPedido.EmPreparo => "bg-secondary-container text-on-secondary-container",
+        StatusPedido.Pronto => "bg-cyan-container text-on-cyan-container",
+        StatusPedido.Entregue => "bg-success-container text-on-success-container",
+        StatusPedido.Cancelado => "bg-error-container text-on-error-container",
+        _ => "bg-surface-container text-on-surface"
+    };
 }
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>Pedidos</h2>
-    <a asp-action="Create" class="btn btn-primary">Novo pedido</a>
-</div>
+<!-- Page Header -->
+<section class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-md">
+    <div class="flex flex-col gap-xs">
+        <h1 class="font-headline text-headline-lg text-on-surface text-balance m-0">Pedidos</h1>
+        <p class="font-body text-body-md text-on-surface-variant text-pretty m-0">
+            Acompanhe os pedidos do balcão, status de preparo e pagamentos.
+        </p>
+    </div>
 
-<form method="get" class="mb-3">
-    <select name="status" class="form-select w-auto" onchange="this.form.submit()">
-        <option value="">Todos os status</option>
-        @foreach (StatusPedido s in Enum.GetValues(typeof(StatusPedido)))
-        {
-            <option value="@((int)s)" selected="@(filtro == s)">@s.Texto()</option>
-        }
-    </select>
-</form>
+    <div class="shrink-0">
+        <a asp-action="Create"
+           class="inline-flex items-center justify-center gap-sm bg-primary text-on-primary font-label text-label-lg px-md py-sm rounded border border-primary hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 transition-opacity duration-state-change ease-state-change no-underline">
+            <span>+ Novo pedido</span>
+        </a>
+    </div>
+</section>
 
-<div class="table-responsive">
-    <table class="table table-hover align-middle">
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Cliente</th>
-                <th>Data</th>
-                <th>Status</th>
-                <th class="text-end">Total</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-        @foreach (var p in Model)
-        {
-            <tr>
-                <td>@p.Id</td>
-                <td>@p.NomeCliente</td>
-                <td>@p.DataCriacao.ToString("dd/MM/yyyy HH:mm")</td>
-                <td><span class="badge @p.Status.BadgeClass()">@p.Status.Texto()</span></td>
-                <td class="text-end">@p.Total.ToString("C")</td>
-                <td class="text-end">
-                    <a asp-action="Details" asp-route-id="@p.Id" class="btn btn-sm btn-outline-primary">Detalhes</a>
-                </td>
-            </tr>
-        }
-        @if (!Model.Any())
-        {
-            <tr><td colspan="6" class="text-center text-muted">Nenhum pedido encontrado.</td></tr>
-        }
-        </tbody>
-    </table>
-</div>
+<!-- Status Filter Pills -->
+<section aria-label="Filtrar pedidos por status" class="flex flex-wrap items-center gap-sm">
+    <a asp-action="Index" class="@PillClass(filtro is null)">
+        <span>Todos</span>
+    </a>
+    @foreach (StatusPedido s in Enum.GetValues(typeof(StatusPedido)))
+    {
+        <a asp-action="Index" asp-route-status="@((int)s)" class="@PillClass(filtro == s)">
+            <span>@s.Texto()</span>
+        </a>
+    }
+</section>
+
+<!-- Orders Table -->
+<section aria-label="Lista de pedidos">
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse m-0">
+                <thead>
+                    <tr class="bg-surface-container-low border-b border-outline-variant">
+                        <th scope="col" class="py-sm px-md font-label text-label-md text-on-surface-variant uppercase tracking-wider w-20">
+                            <span>Código</span>
+                        </th>
+                        <th scope="col" class="py-sm px-md font-label text-label-md text-on-surface-variant uppercase tracking-wider">
+                            <span>Cliente</span>
+                        </th>
+                        <th scope="col" class="py-sm px-md font-label text-label-md text-on-surface-variant uppercase tracking-wider">
+                            <span>Data</span>
+                        </th>
+                        <th scope="col" class="py-sm px-md font-label text-label-md text-on-surface-variant uppercase tracking-wider w-36">
+                            <span>Status</span>
+                        </th>
+                        <th scope="col" class="py-sm px-md font-label text-label-md text-on-surface-variant uppercase tracking-wider text-right w-32">
+                            <span>Total</span>
+                        </th>
+                        <th scope="col" class="py-sm px-md font-label text-label-md text-on-surface-variant uppercase tracking-wider text-right w-32">
+                            <span>Ações</span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-outline-variant">
+                @foreach (var p in listaPedidos)
+                {
+                    <tr class="hover:bg-surface-container-low transition-colors duration-state-change ease-state-change">
+                        <td class="py-md px-md font-mono text-mono-sm text-on-surface-variant tabular-nums">
+                            <span>#@p.Id</span>
+                        </td>
+                        <td class="py-md px-md font-title text-title-md text-on-surface">
+                            <span>@p.NomeCliente</span>
+                        </td>
+                        <td class="py-md px-md font-body text-body-md text-on-surface-variant tabular-nums">
+                            <span>@p.DataCriacao.ToString("dd/MM/yyyy HH:mm")</span>
+                        </td>
+                        <td class="py-md px-md">
+                            <span role="status" class="inline-flex items-center px-sm py-xs rounded-full font-label text-label-md @PedidoBadgeClasses(p.Status)">
+                                <span>@p.Status.Texto()</span>
+                            </span>
+                        </td>
+                        <td class="py-md px-md text-right font-headline text-title-md text-on-surface tabular-nums whitespace-nowrap">
+                            <span>@p.Total.ToString("C")</span>
+                        </td>
+                        <td class="py-md px-md text-right">
+                            <a asp-action="Details" asp-route-id="@p.Id"
+                               class="inline-flex items-center gap-xs px-sm py-xs rounded border border-outline-variant bg-surface-container-lowest font-label text-label-md text-on-surface hover:bg-surface-container-low transition-colors duration-state-change ease-state-change no-underline">
+                                <span class="material-symbols-outlined text-title-md" aria-hidden="true">visibility</span>
+                                <span>Detalhes</span>
+                            </a>
+                        </td>
+                    </tr>
+                }
+                @if (!listaPedidos.Any())
+                {
+                    <tr>
+                        <td colspan="6" class="py-2xl px-md text-center font-body text-body-md text-on-surface-variant">
+                            Nenhum pedido encontrado.
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</section>

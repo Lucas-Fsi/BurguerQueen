@@ -1,0 +1,93 @@
+@model BurguerQueen.Models.Produto
+@using BurguerQueen.Models
+@using BurguerQueen.Models.Enums
+@{
+    ViewData["Title"] = $"Detalhes — {Model.Nome}";
+    var badgeClasses = Model.Tipo == TipoProduto.Lanche
+        ? "bg-secondary-container text-on-secondary-container"
+        : "bg-cyan-container text-on-cyan-container";
+}
+
+<div class="w-full max-w-2xl mx-auto flex flex-col gap-md">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="Breadcrumb" class="flex items-center gap-xs text-on-surface-variant">
+        <a asp-action="Index" class="font-label text-label-md text-on-surface-variant hover:text-primary transition-colors duration-state-change ease-state-change no-underline">
+            <span>Produtos</span>
+        </a>
+        <span class="material-symbols-outlined text-body-md text-outline" aria-hidden="true">chevron_right</span>
+        <span class="font-label text-label-md text-on-surface">Detalhes #@Model.Id</span>
+    </nav>
+
+    <section class="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden">
+        <!-- Header -->
+        <div class="px-lg pt-lg pb-md border-b border-outline-variant flex items-start justify-between gap-md">
+            <div class="flex flex-col gap-xs">
+                <div class="flex items-center gap-sm">
+                    <span class="font-mono text-mono-sm text-on-surface-variant">#@Model.Id</span>
+                    <span role="status" class="inline-flex items-center px-sm py-xs rounded-full font-label text-label-md @badgeClasses">
+                        @Model.Tipo
+                    </span>
+                </div>
+                <h1 class="font-headline text-headline-lg text-on-surface m-0">@Model.Nome</h1>
+            </div>
+            <div class="text-right shrink-0">
+                <span class="font-body text-body-sm text-on-surface-variant block">Preço</span>
+                <span class="font-headline text-headline-md text-on-surface tabular-nums">@Model.Preco.ToString("C")</span>
+            </div>
+        </div>
+
+        <!-- Details Body -->
+        <div class="p-lg flex flex-col gap-md">
+            @if (Model is Lanche lanche)
+            {
+                <div class="flex flex-col gap-xs">
+                    <span class="font-label text-label-md text-on-surface-variant uppercase tracking-wider">Descrição</span>
+                    <p class="font-body text-body-lg text-on-surface m-0">@lanche.Descricao</p>
+                </div>
+
+                <div class="flex flex-col gap-xs">
+                    <span class="font-label text-label-md text-on-surface-variant uppercase tracking-wider">Adicionais</span>
+                    <p class="font-body text-body-md text-on-surface m-0">
+                        @(string.IsNullOrWhiteSpace(lanche.Adicionais) ? "Nenhum adicional informado" : lanche.Adicionais)
+                    </p>
+                </div>
+            }
+            else if (Model is Bebida bebida)
+            {
+                <div class="flex flex-col gap-xs">
+                    <span class="font-label text-label-md text-on-surface-variant uppercase tracking-wider">Tamanho</span>
+                    <p class="font-body text-body-lg text-on-surface tabular-nums m-0">@bebida.Tamanho ml</p>
+                </div>
+            }
+
+            <div class="bg-surface-container-low border border-outline-variant rounded-md p-md flex flex-col gap-xs">
+                <span class="font-label text-label-md text-on-surface-variant uppercase tracking-wider">Resumo exibido no sistema</span>
+                <p class="font-body text-body-md text-on-surface m-0">@Model.Detalhes()</p>
+            </div>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="px-lg py-md bg-surface-container-low border-t border-outline-variant flex items-center justify-between gap-sm flex-wrap">
+            <a asp-action="Index"
+               class="inline-flex items-center justify-center gap-xs bg-surface-container-lowest text-on-surface font-label text-label-lg px-md py-sm rounded border border-outline-variant hover:bg-surface-container transition-colors duration-state-change ease-state-change no-underline">
+                <span class="material-symbols-outlined text-title-md" aria-hidden="true">arrow_back</span>
+                <span>Voltar</span>
+            </a>
+
+            <div class="flex items-center gap-sm">
+                <a asp-action="Delete" asp-route-id="@Model.Id"
+                   class="inline-flex items-center justify-center gap-xs bg-surface-container-lowest text-error font-label text-label-lg px-md py-sm rounded border border-outline-variant hover:bg-error-container hover:border-error-container transition-colors duration-state-change ease-state-change no-underline">
+                    <span class="material-symbols-outlined text-title-md" aria-hidden="true">delete</span>
+                    <span>Excluir</span>
+                </a>
+                <a asp-action="Edit" asp-route-id="@Model.Id"
+                   class="inline-flex items-center justify-center gap-xs bg-primary text-on-primary font-label text-label-lg px-md py-sm rounded border border-primary hover:opacity-90 transition-opacity duration-state-change ease-state-change no-underline">
+                    <span class="material-symbols-outlined text-title-md" aria-hidden="true">edit</span>
+                    <span>Editar produto</span>
+                </a>
+            </div>
+        </div>
+    </section>
+
+</div>

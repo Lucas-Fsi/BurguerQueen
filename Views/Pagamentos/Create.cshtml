@@ -1,93 +1,444 @@
-@using BurguerQueen.Models.Enums
 @model BurguerQueen.Models.ViewModels.PagamentoViewModel
+@using BurguerQueen.Models.Enums
+@using System.Globalization
 @{
-    ViewData["Title"] = "Registrar pagamento";
+    ViewData["Title"] = $"Registrar Pagamento — Pedido #{Model.PedidoId}";
+
+    var formaInicial = Model.Forma ?? FormaPagamento.Cartao;
+    var tipoCartaoInicial = Model.TipoCartao ?? TipoCartao.Credito;
+    var parcelasInicial = Model.Parcelas is >= 1 and <= 12 ? Model.Parcelas.Value : 1;
+    var bandeiras = new[] { "Visa", "Mastercard", "Elo", "American Express", "Hipercard" };
+    var bandeiraAtual = string.IsNullOrWhiteSpace(Model.Bandeira) ? "Mastercard" : Model.Bandeira;
+    var valorTotalJs = Model.ValorTotal.ToString("F2", CultureInfo.InvariantCulture);
+
+    string CardClass(bool ativo) => ativo
+        ? "method-card h-full text-left bg-primary-container border-2 border-primary rounded-md p-md flex flex-col gap-sm transition-colors duration-state-change ease-state-change"
+        : "method-card h-full text-left bg-surface-container-lowest border border-outline-variant rounded-md p-md flex flex-col gap-sm hover:bg-surface-container-low transition-colors duration-state-change ease-state-change";
+
+    string IconBoxClass(bool ativo) => ativo
+        ? "method-icon-box w-9 h-9 rounded bg-primary text-on-primary flex items-center justify-center transition-colors duration-state-change ease-state-change"
+        : "method-icon-box w-9 h-9 rounded bg-surface-container-low text-on-surface-variant flex items-center justify-center transition-colors duration-state-change ease-state-change";
+
+    string CardTitleClass(bool ativo) => ativo
+        ? "method-title font-title text-title-md text-on-primary-container"
+        : "method-title font-title text-title-md text-on-surface";
 }
 
-<h1>Registrar pagamento</h1>
+<div class="w-full max-w-2xl mx-auto flex flex-col gap-lg">
 
-<p>
-    Pedido <strong>#@Model.PedidoId</strong> &mdash; Total a pagar:
-    <strong>@Model.ValorTotal.ToString("C")</strong>
-</p>
+    <!-- Breadcrumb -->
+    <nav aria-label="Breadcrumb" class="flex flex-wrap items-center gap-xs text-on-surface-variant">
+        <a asp-controller="Pedidos" asp-action="Index"
+           class="font-label text-label-md text-on-surface-variant hover:text-primary transition-colors duration-state-change ease-state-change no-underline">
+            <span>Pedidos</span>
+        </a>
+        <span class="material-symbols-outlined text-body-md text-outline" aria-hidden="true">chevron_right</span>
+        <a asp-controller="Pedidos" asp-action="Details" asp-route-id="@Model.PedidoId"
+           class="font-label text-label-md text-on-surface-variant hover:text-primary transition-colors duration-state-change ease-state-change no-underline">
+            <span>Pedido #@Model.PedidoId</span>
+        </a>
+        <span class="material-symbols-outlined text-body-md text-outline" aria-hidden="true">chevron_right</span>
+        <span class="font-label text-label-md text-on-surface">Registrar Pagamento</span>
+    </nav>
 
-<form asp-action="Create" method="post" style="max-width: 520px">
-    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
-    <input type="hidden" asp-for="PedidoId" />
+    <!-- Top Summary Card -->
+    <section aria-label="Resumo do valor a pagar" class="bg-surface-container-lowest border border-outline-variant rounded-lg p-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-md">
+        <div class="flex flex-col gap-xs">
+            <div class="flex flex-wrap items-center gap-sm">
+                <span class="font-headline text-title-md text-on-surface tabular-nums">Pedido #@Model.PedidoId</span>
+                <span class="inline-flex items-center px-sm py-xs rounded-full bg-secondary-container text-on-secondary-container font-label text-label-md">
+                    <span>Aguardando pagamento</span>
+                </span>
+            </div>
+            <p class="font-body text-body-sm text-on-surface-variant m-0">
+                Atendimento no balcão
+            </p>
+        </div>
 
-    <div class="mb-3">
-        <label asp-for="Forma" class="form-label"></label>
-        <select asp-for="Forma" id="forma" class="form-select"
-                asp-items="Html.GetEnumSelectList<FormaPagamento>()">
-            <option value="">Selecione...</option>
-        </select>
-        <span asp-validation-for="Forma" class="text-danger"></span>
-    </div>
+        <div class="flex flex-col sm:items-end gap-xs">
+            <span class="font-label text-label-md text-on-surface-variant uppercase tracking-wider">Total a pagar</span>
+            <span class="font-headline text-display-lg text-primary tabular-nums whitespace-nowrap">@Model.ValorTotal.ToString("C")</span>
+        </div>
+    </section>
 
-    @* Dinheiro (valor 1) *@
-    <div data-forma="1" class="d-none">
-        <div class="mb-3">
-            <label asp-for="ValorRecebido" class="form-label"></label>
-            <input asp-for="ValorRecebido" type="text" inputmode="decimal" class="form-control" />
-            <span asp-validation-for="ValorRecebido" class="text-danger"></span>
+    <!-- Payment Form Card -->
+    <section aria-labelledby="payment-form-title" class="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden">
+        <div class="px-lg pt-lg pb-md border-b border-outline-variant flex flex-col gap-xs">
+            <h1 id="payment-form-title" class="font-headline text-headline-lg text-on-surface m-0">
+                Registrar Pagamento
+            </h1>
+            <p class="font-body text-body-md text-on-surface-variant m-0">
+                Selecione a forma de pagamento e preencha os detalhes da operação no balcão.
+            </p>
         </div>
-    </div>
 
-    @* Pix (valor 2) *@
-    <div data-forma="2" class="d-none">
-        <div class="mb-3">
-            <label asp-for="Chave" class="form-label"></label>
-            <input asp-for="Chave" class="form-control" />
-            <span asp-validation-for="Chave" class="text-danger"></span>
-        </div>
-        <div class="mb-3">
-            <label asp-for="CodigoTransacao" class="form-label"></label>
-            <input asp-for="CodigoTransacao" class="form-control" />
-            <span asp-validation-for="CodigoTransacao" class="text-danger"></span>
-        </div>
-    </div>
+        <form asp-action="Create" method="post" class="flex flex-col">
+            <input type="hidden" asp-for="PedidoId" />
+            <input type="hidden" asp-for="Forma" id="forma-pagamento" value="@((int)formaInicial)" />
 
-    @* Cartão (valor 3) *@
-    <div data-forma="3" class="d-none">
-        <div class="mb-3">
-            <label asp-for="TipoCartao" class="form-label"></label>
-            <select asp-for="TipoCartao" class="form-select"
-                    asp-items="Html.GetEnumSelectList<TipoCartao>()">
-                <option value="">Selecione...</option>
-            </select>
-        </div>
-        <div class="mb-3">
-            <label asp-for="Parcelas" class="form-label"></label>
-            <input asp-for="Parcelas" type="number" min="1" max="12" class="form-control" />
-            <div class="form-text">Débito aceita apenas 1 parcela.</div>
-        </div>
-        <div class="mb-3">
-            <label asp-for="Bandeira" class="form-label"></label>
-            <input asp-for="Bandeira" class="form-control" />
-            <span asp-validation-for="Bandeira" class="text-danger"></span>
-        </div>
-        <div class="mb-3">
-            <label asp-for="CodigoAutorizacao" class="form-label"></label>
-            <input asp-for="CodigoAutorizacao" class="form-control" />
-            <span asp-validation-for="CodigoAutorizacao" class="text-danger"></span>
-        </div>
-    </div>
+            <div class="p-lg flex flex-col gap-lg">
+                <div asp-validation-summary="ModelOnly" class="bg-error-container border border-outline-variant rounded-md px-md py-sm font-body text-body-md text-on-error-container"></div>
 
-    <button type="submit" class="btn btn-primary">Registrar pagamento</button>
-    <a asp-controller="Pedidos" asp-action="Details" asp-route-id="@Model.PedidoId" class="btn btn-outline-secondary">Voltar</a>
-</form>
+                <!-- Payment Method Selector (3 clickable cards) -->
+                <div class="flex flex-col gap-sm">
+                    <span class="font-label text-label-lg text-on-surface">Forma de Pagamento</span>
+                    <div role="radiogroup" aria-label="Forma de Pagamento" class="grid grid-cols-1 sm:grid-cols-3 gap-md items-stretch">
+
+                        <!-- Dinheiro -->
+                        <button type="button"
+                                role="radio"
+                                aria-checked="@(formaInicial == FormaPagamento.Dinheiro ? "true" : "false")"
+                                data-forma="@((int)FormaPagamento.Dinheiro)"
+                                class="@CardClass(formaInicial == FormaPagamento.Dinheiro)">
+                            <div class="flex items-center justify-between w-full">
+                                <span class="@IconBoxClass(formaInicial == FormaPagamento.Dinheiro)">
+                                    <span class="material-symbols-outlined text-title-md" aria-hidden="true">payments</span>
+                                </span>
+                                <span class="method-check @(formaInicial == FormaPagamento.Dinheiro ? "" : "hidden") material-symbols-outlined text-title-md text-primary" style="font-variation-settings: 'FILL' 1;" aria-hidden="true">check_circle</span>
+                            </div>
+                            <span class="@CardTitleClass(formaInicial == FormaPagamento.Dinheiro)">Dinheiro</span>
+                        </button>
+
+                        <!-- Pix -->
+                        <button type="button"
+                                role="radio"
+                                aria-checked="@(formaInicial == FormaPagamento.Pix ? "true" : "false")"
+                                data-forma="@((int)FormaPagamento.Pix)"
+                                class="@CardClass(formaInicial == FormaPagamento.Pix)">
+                            <div class="flex items-center justify-between w-full">
+                                <span class="@IconBoxClass(formaInicial == FormaPagamento.Pix)">
+                                    <span class="material-symbols-outlined text-title-md" aria-hidden="true">qr_code_2</span>
+                                </span>
+                                <span class="method-check @(formaInicial == FormaPagamento.Pix ? "" : "hidden") material-symbols-outlined text-title-md text-primary" style="font-variation-settings: 'FILL' 1;" aria-hidden="true">check_circle</span>
+                            </div>
+                            <span class="@CardTitleClass(formaInicial == FormaPagamento.Pix)">Pix</span>
+                        </button>
+
+                        <!-- Cartão -->
+                        <button type="button"
+                                role="radio"
+                                aria-checked="@(formaInicial == FormaPagamento.Cartao ? "true" : "false")"
+                                data-forma="@((int)FormaPagamento.Cartao)"
+                                class="@CardClass(formaInicial == FormaPagamento.Cartao)">
+                            <div class="flex items-center justify-between w-full">
+                                <span class="@IconBoxClass(formaInicial == FormaPagamento.Cartao)">
+                                    <span class="material-symbols-outlined text-title-md" aria-hidden="true">credit_card</span>
+                                </span>
+                                <span class="method-check @(formaInicial == FormaPagamento.Cartao ? "" : "hidden") material-symbols-outlined text-title-md text-primary" style="font-variation-settings: 'FILL' 1;" aria-hidden="true">check_circle</span>
+                            </div>
+                            <span class="@CardTitleClass(formaInicial == FormaPagamento.Cartao)">Cartão</span>
+                        </button>
+
+                    </div>
+                    <span asp-validation-for="Forma" class="font-body text-body-sm text-error"></span>
+                </div>
+
+                <!-- Dynamic Fields for Selected Payment Method -->
+                <div class="bg-surface-container-low border border-outline-variant rounded-md p-md sm:p-lg flex flex-col gap-md">
+
+                    <!-- Cartão Fields (valor 3) -->
+                    <div id="fields-cartao" data-forma-panel="@((int)FormaPagamento.Cartao)" class="@(formaInicial == FormaPagamento.Cartao ? "flex" : "hidden") flex-col gap-md">
+                        <div class="flex items-center justify-between pb-sm border-b border-outline-variant">
+                            <h2 class="font-title text-title-md text-on-surface m-0">Dados do Cartão</h2>
+                            <span class="inline-flex items-center px-sm py-xs rounded-full bg-primary-container text-on-primary-container font-label text-label-md">
+                                <span>Cartão selecionado</span>
+                            </span>
+                        </div>
+
+                        <input type="hidden" asp-for="TipoCartao" id="tipo-cartao-input" value="@((int)tipoCartaoInicial)" />
+                        <input type="hidden" asp-for="Parcelas" id="parcelas-input" value="@parcelasInicial" />
+
+                        <!-- Tipo do Cartão & Parcelas -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-md">
+                            <div class="flex flex-col gap-xs">
+                                <span class="font-label text-label-lg text-on-surface">Tipo do cartão</span>
+                                <div role="radiogroup" aria-label="Tipo do cartão" class="grid grid-cols-2 gap-xs p-xs bg-surface-container-lowest border border-outline-variant rounded">
+                                    <button type="button"
+                                            role="radio"
+                                            aria-checked="@(tipoCartaoInicial == TipoCartao.Debito ? "true" : "false")"
+                                            data-card-type="@((int)TipoCartao.Debito)"
+                                            class="card-type-btn py-xs px-sm rounded font-label text-label-md transition-colors duration-state-change ease-state-change @(tipoCartaoInicial == TipoCartao.Debito ? "bg-on-surface text-surface-container-lowest" : "text-on-surface-variant hover:text-on-surface")">
+                                        <span>Débito</span>
+                                    </button>
+                                    <button type="button"
+                                            role="radio"
+                                            aria-checked="@(tipoCartaoInicial == TipoCartao.Credito ? "true" : "false")"
+                                            data-card-type="@((int)TipoCartao.Credito)"
+                                            class="card-type-btn py-xs px-sm rounded font-label text-label-md transition-colors duration-state-change ease-state-change @(tipoCartaoInicial == TipoCartao.Credito ? "bg-on-surface text-surface-container-lowest" : "text-on-surface-variant hover:text-on-surface")">
+                                        <span>Crédito</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="flex flex-col gap-xs">
+                                <label for="card-installments" class="font-label text-label-lg text-on-surface">Parcelas</label>
+                                <select id="card-installments"
+                                        class="w-full px-md py-sm bg-surface-container-lowest border border-outline-variant rounded font-body text-body-md text-on-surface tabular-nums focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                                    @for (int i = 1; i <= 12; i++)
+                                    {
+                                        var valorParcela = Math.Round(Model.ValorTotal / i, 2);
+                                        var rotulo = i == 1
+                                            ? $"1x de {valorParcela:C} (à vista)"
+                                            : $"{i}x de {valorParcela:C}";
+                                        <option value="@i" selected="@(parcelasInicial == i)">@rotulo</option>
+                                    }
+                                </select>
+                                <p class="font-body text-body-sm text-on-surface-variant flex items-center gap-xs m-0">
+                                    <span class="material-symbols-outlined text-body-lg text-amber-accent" aria-hidden="true">info</span>
+                                    <span>Débito aceita apenas 1 parcela</span>
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Bandeira & Código de autorização -->
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-md">
+                            <div class="flex flex-col gap-xs">
+                                <label asp-for="Bandeira" class="font-label text-label-lg text-on-surface"></label>
+                                <select asp-for="Bandeira"
+                                        class="w-full px-md py-sm bg-surface-container-lowest border border-outline-variant rounded font-body text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                                    @foreach (var b in bandeiras)
+                                    {
+                                        <option value="@b" selected="@string.Equals(bandeiraAtual, b, StringComparison.OrdinalIgnoreCase)">@b</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="Bandeira" class="font-body text-body-sm text-error"></span>
+                            </div>
+
+                            <div class="flex flex-col gap-xs">
+                                <label asp-for="CodigoAutorizacao" class="font-label text-label-lg text-on-surface"></label>
+                                <input asp-for="CodigoAutorizacao"
+                                       type="text"
+                                       placeholder="Ex.: AUT-849201"
+                                       class="w-full px-md py-sm bg-surface-container-lowest border border-outline-variant rounded font-mono text-mono-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
+                                <span asp-validation-for="CodigoAutorizacao" class="font-body text-body-sm text-error"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dinheiro Fields (valor 1) -->
+                    <div id="fields-dinheiro" data-forma-panel="@((int)FormaPagamento.Dinheiro)" class="@(formaInicial == FormaPagamento.Dinheiro ? "flex" : "hidden") flex-col gap-md">
+                        <div class="flex items-center justify-between pb-sm border-b border-outline-variant">
+                            <h2 class="font-title text-title-md text-on-surface m-0">Pagamento em Dinheiro</h2>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-md">
+                            <div class="flex flex-col gap-xs">
+                                <label asp-for="ValorRecebido" class="font-label text-label-lg text-on-surface"></label>
+                                <div class="relative flex items-center">
+                                    <span class="absolute left-3 font-label text-label-lg text-on-surface-variant pointer-events-none select-none">R$</span>
+                                    <input asp-for="ValorRecebido"
+                                           id="cash-received"
+                                           type="text"
+                                           inputmode="decimal"
+                                           placeholder="@Model.ValorTotal.ToString("F2")"
+                                           value="@(Model.ValorRecebido.HasValue && Model.ValorRecebido.Value > 0 ? Model.ValorRecebido.Value.ToString("F2") : "")"
+                                           class="w-full pl-10 pr-md py-sm bg-surface-container-lowest border border-outline-variant rounded font-headline text-title-md text-on-surface text-right tabular-nums placeholder:text-on-surface-variant focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
+                                </div>
+                                <span asp-validation-for="ValorRecebido" class="font-body text-body-sm text-error"></span>
+                            </div>
+                            <div class="flex flex-col gap-xs">
+                                <span class="font-label text-label-lg text-on-surface">Troco estimado</span>
+                                <div id="cash-change-box" class="px-md py-sm bg-surface-container-lowest border border-outline-variant rounded font-headline text-title-md text-success text-right tabular-nums">
+                                    <span id="cash-change-value">R$ 0,00</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Pix Fields (valor 2) -->
+                    <div id="fields-pix" data-forma-panel="@((int)FormaPagamento.Pix)" class="@(formaInicial == FormaPagamento.Pix ? "flex" : "hidden") flex-col gap-md">
+                        <div class="flex items-center justify-between pb-sm border-b border-outline-variant">
+                            <h2 class="font-title text-title-md text-on-surface m-0">Pagamento via Pix</h2>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-md">
+                            <div class="flex flex-col gap-xs">
+                                <label asp-for="Chave" class="font-label text-label-lg text-on-surface"></label>
+                                <input asp-for="Chave"
+                                       type="text"
+                                       placeholder="Ex.: pix@burguerqueen.com.br"
+                                       class="w-full px-md py-sm bg-surface-container-lowest border border-outline-variant rounded font-body text-body-md text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
+                                <span asp-validation-for="Chave" class="font-body text-body-sm text-error"></span>
+                            </div>
+                            <div class="flex flex-col gap-xs">
+                                <label asp-for="CodigoTransacao" class="font-label text-label-lg text-on-surface"></label>
+                                <input asp-for="CodigoTransacao"
+                                       type="text"
+                                       placeholder="Ex.: E18236120202611231401..."
+                                       class="w-full px-md py-sm bg-surface-container-lowest border border-outline-variant rounded font-mono text-mono-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
+                                <span asp-validation-for="CodigoTransacao" class="font-body text-body-sm text-error"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Card Footer Buttons -->
+            <div class="px-lg py-md bg-surface-container-low border-t border-outline-variant flex flex-col sm:flex-row items-stretch sm:items-center justify-end gap-sm">
+                <a asp-controller="Pedidos" asp-action="Details" asp-route-id="@Model.PedidoId"
+                   class="inline-flex items-center justify-center gap-sm bg-surface-container-lowest text-on-surface font-label text-label-lg px-md py-sm rounded border border-outline-variant hover:bg-surface-container focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors duration-state-change ease-state-change no-underline">
+                    <span>Voltar ao pedido</span>
+                </a>
+
+                <button type="submit"
+                        class="inline-flex items-center justify-center gap-sm bg-primary text-on-primary font-label text-label-lg px-md py-sm rounded border border-primary hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 transition-opacity duration-state-change ease-state-change">
+                    <span class="material-symbols-outlined text-title-md" aria-hidden="true">check</span>
+                    <span>Confirmar pagamento</span>
+                </button>
+            </div>
+        </form>
+    </section>
+
+</div>
 
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
     <script>
-        // Mostra só os campos da forma de pagamento escolhida
-        const forma = document.getElementById('forma');
-        function atualizarCampos() {
-            document.querySelectorAll('[data-forma]').forEach(function (bloco) {
-                bloco.classList.toggle('d-none', bloco.dataset.forma !== forma.value);
+        (function () {
+            var valorTotal = @valorTotalJs;
+            var formaInput = document.getElementById('forma-pagamento');
+            var methodCards = document.querySelectorAll('.method-card');
+            var panels = document.querySelectorAll('[data-forma-panel]');
+
+            var tipoCartaoInput = document.getElementById('tipo-cartao-input');
+            var parcelasInput = document.getElementById('parcelas-input');
+            var cardTypeBtns = document.querySelectorAll('.card-type-btn');
+            var installmentsSelect = document.getElementById('card-installments');
+
+            var cashInput = document.getElementById('cash-received');
+            var cashChangeBox = document.getElementById('cash-change-box');
+            var cashChangeValue = document.getElementById('cash-change-value');
+
+            function syncCardInstallmentsState() {
+                var isDebito = tipoCartaoInput.value === '@((int)TipoCartao.Debito)';
+                if (isDebito) {
+                    installmentsSelect.value = '1';
+                    parcelasInput.value = '1';
+                    installmentsSelect.disabled = true;
+                    installmentsSelect.classList.add('opacity-60', 'cursor-not-allowed');
+                } else {
+                    installmentsSelect.disabled = false;
+                    installmentsSelect.classList.remove('opacity-60', 'cursor-not-allowed');
+                    parcelasInput.value = installmentsSelect.value || '1';
+                }
+            }
+
+            function selectMethod(formaValor) {
+                formaInput.value = formaValor;
+
+                methodCards.forEach(function (card) {
+                    var isSelected = card.getAttribute('data-forma') === formaValor;
+                    card.setAttribute('aria-checked', isSelected ? 'true' : 'false');
+
+                    var check = card.querySelector('.method-check');
+                    var iconBox = card.querySelector('.method-icon-box');
+                    var title = card.querySelector('.method-title');
+
+                    if (isSelected) {
+                        card.classList.remove('bg-surface-container-lowest', 'border', 'border-outline-variant', 'hover:bg-surface-container-low');
+                        card.classList.add('bg-primary-container', 'border-2', 'border-primary');
+                        if (check) check.classList.remove('hidden');
+                        if (iconBox) {
+                            iconBox.classList.remove('bg-surface-container-low', 'text-on-surface-variant');
+                            iconBox.classList.add('bg-primary', 'text-on-primary');
+                        }
+                        if (title) {
+                            title.classList.remove('text-on-surface');
+                            title.classList.add('text-on-primary-container');
+                        }
+                    } else {
+                        card.classList.remove('bg-primary-container', 'border-2', 'border-primary');
+                        card.classList.add('bg-surface-container-lowest', 'border', 'border-outline-variant', 'hover:bg-surface-container-low');
+                        if (check) check.classList.add('hidden');
+                        if (iconBox) {
+                            iconBox.classList.remove('bg-primary', 'text-on-primary');
+                            iconBox.classList.add('bg-surface-container-low', 'text-on-surface-variant');
+                        }
+                        if (title) {
+                            title.classList.remove('text-on-primary-container');
+                            title.classList.add('text-on-surface');
+                        }
+                    }
+                });
+
+                panels.forEach(function (panel) {
+                    var ativo = panel.getAttribute('data-forma-panel') === formaValor;
+                    panel.classList.toggle('hidden', !ativo);
+                    panel.classList.toggle('flex', ativo);
+                    panel.querySelectorAll('input, select, textarea').forEach(function (el) {
+                        el.disabled = !ativo;
+                    });
+                });
+
+                if (formaValor === '@((int)FormaPagamento.Cartao)') {
+                    syncCardInstallmentsState();
+                }
+            }
+
+            methodCards.forEach(function (card) {
+                card.addEventListener('click', function () {
+                    selectMethod(card.getAttribute('data-forma'));
+                });
             });
-        }
-        forma.addEventListener('change', atualizarCampos);
-        atualizarCampos();
+
+            cardTypeBtns.forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var typeVal = btn.getAttribute('data-card-type');
+                    tipoCartaoInput.value = typeVal;
+
+                    cardTypeBtns.forEach(function (b) {
+                        var isSelected = b === btn;
+                        b.setAttribute('aria-checked', isSelected ? 'true' : 'false');
+                        if (isSelected) {
+                            b.classList.remove('text-on-surface-variant');
+                            b.classList.add('bg-on-surface', 'text-surface-container-lowest');
+                        } else {
+                            b.classList.remove('bg-on-surface', 'text-surface-container-lowest');
+                            b.classList.add('text-on-surface-variant');
+                        }
+                    });
+
+                    syncCardInstallmentsState();
+                });
+            });
+
+            if (installmentsSelect) {
+                installmentsSelect.addEventListener('change', function () {
+                    parcelasInput.value = installmentsSelect.value;
+                });
+            }
+
+            function formatBRL(v) {
+                return 'R$ ' + v.toFixed(2).replace('.', ',');
+            }
+
+            function updateCashChange() {
+                if (!cashInput || !cashChangeValue) return;
+                var raw = (cashInput.value || '').trim().replace(/\./g, '').replace(',', '.');
+                var parsed = parseFloat(raw);
+                if (isNaN(parsed)) {
+                    cashChangeValue.textContent = 'R$ 0,00';
+                    cashChangeBox.classList.remove('text-error');
+                    cashChangeBox.classList.add('text-success');
+                    return;
+                }
+                var diff = parsed - valorTotal;
+                if (diff < 0) {
+                    cashChangeValue.textContent = 'Faltam ' + formatBRL(Math.abs(diff));
+                    cashChangeBox.classList.remove('text-success');
+                    cashChangeBox.classList.add('text-error');
+                } else {
+                    cashChangeValue.textContent = formatBRL(diff);
+                    cashChangeBox.classList.remove('text-error');
+                    cashChangeBox.classList.add('text-success');
+                }
+            }
+
+            if (cashInput) {
+                cashInput.addEventListener('input', updateCashChange);
+                updateCashChange();
+            }
+
+            selectMethod(formaInput.value || '@((int)FormaPagamento.Cartao)');
+        })();
     </script>
 }

@@ -1,126 +1,320 @@
 @model BurguerQueen.Models.ViewModels.PedidoDetalhesViewModel
 @using BurguerQueen.Models.Enums
-@{ ViewData["Title"] = $"Pedido #{Model.Id}"; }
+@{
+    ViewData["Title"] = $"Pedido #{Model.Id}";
 
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h2>Pedido #@Model.Id</h2>
-    <span class="badge fs-6 @Model.Status.BadgeClass()">@Model.Status.Texto()</span>
-</div>
+    var totalQtd = Model.Itens.Sum(i => i.Quantidade);
+    var totalPago = Model.Pagamentos
+        .Where(p => p.Status == StatusPagamento.Aprovado)
+        .Sum(p => p.Valor);
+    var restante = Math.Max(0m, Model.Total - totalPago);
 
-<div class="card mb-4">
-    <div class="card-body">
-        <p class="mb-1"><strong>Cliente:</strong> @Model.NomeCliente</p>
-        <p class="mb-1"><strong>Data:</strong> @Model.DataCriacao.ToString("dd/MM/yyyy HH:mm")</p>
-        <p class="mb-0 fs-5"><strong>Total:</strong> @Model.Total.ToString("C")</p>
-    </div>
-</div>
+    string PedidoBadgeClasses(StatusPedido s) => s switch
+    {
+        StatusPedido.Aberto => "bg-surface-container text-on-surface",
+        StatusPedido.EmPreparo => "bg-secondary-container text-on-secondary-container",
+        StatusPedido.Pronto => "bg-cyan-container text-on-cyan-container",
+        StatusPedido.Entregue => "bg-success-container text-on-success-container",
+        StatusPedido.Cancelado => "bg-error-container text-on-error-container",
+        _ => "bg-surface-container text-on-surface"
+    };
 
-@if (Model.PodeEditarItens)
-{
-    <form asp-action="AdicionarItem" asp-route-id="@Model.Id" method="post" class="row g-2 mb-4">
-        <div class="col-md-6">
-            <select name="produtoId" asp-items="Model.Produtos" class="form-select" required>
-                <option value="">Selecione o produto</option>
-            </select>
-        </div>
-        <div class="col-md-2">
-            <input type="number" name="quantidade" value="1" min="1" class="form-control" required />
-        </div>
-        <div class="col-md-4">
-            <button type="submit" class="btn btn-success">Adicionar item</button>
-        </div>
-    </form>
+    string PagamentoBadgeClasses(StatusPagamento s) => s switch
+    {
+        StatusPagamento.Aprovado => "bg-success-container text-on-success-container",
+        StatusPagamento.Pendente => "bg-secondary-container text-on-secondary-container",
+        StatusPagamento.Estornado => "bg-error-container text-on-error-container",
+        StatusPagamento.Cancelado => "bg-surface-container text-on-surface-variant",
+        _ => "bg-surface-container text-on-surface"
+    };
 }
 
-<div class="table-responsive">
-    <table class="table align-middle">
-        <thead>
-            <tr>
-                <th>Produto</th>
-                <th class="text-center">Qtd</th>
-                <th class="text-end">Preço unit.</th>
-                <th class="text-end">Subtotal</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-        @foreach (var item in Model.Itens)
-        {
-            <tr>
-                <td>@item.NomeProduto</td>
-                <td class="text-center">@item.Quantidade</td>
-                <td class="text-end">@item.PrecoUnitario.ToString("C")</td>
-                <td class="text-end">@item.Subtotal.ToString("C")</td>
-                <td class="text-end">
-                    @if (Model.PodeEditarItens)
-                    {
-                        <form asp-action="RemoverItem" asp-route-id="@Model.Id" method="post" class="d-inline">
-                            <input type="hidden" name="produtoId" value="@item.ProdutoId" />
-                            <button type="submit" class="btn btn-sm btn-outline-danger">Remover</button>
-                        </form>
-                    }
-                </td>
-            </tr>
-        }
-        @if (!Model.Itens.Any())
-        {
-            <tr><td colspan="5" class="text-center text-muted">Nenhum item adicionado ainda.</td></tr>
-        }
-        </tbody>
-    </table>
-</div>
+<!-- Breadcrumb -->
+<nav aria-label="Breadcrumb" class="flex items-center gap-xs text-on-surface-variant">
+    <a asp-action="Index" class="font-label text-label-md text-on-surface-variant hover:text-primary transition-colors duration-state-change ease-state-change no-underline">
+        <span>Pedidos</span>
+    </a>
+    <span class="material-symbols-outlined text-body-md text-outline" aria-hidden="true">chevron_right</span>
+    <span class="font-label text-label-md text-on-surface">Pedido #@Model.Id</span>
+</nav>
 
-@if (Model.Pagamentos.Any())
-{
-    <h4 class="mt-4">Pagamentos</h4>
-    <div class="table-responsive">
-        <table class="table align-middle">
-            <thead>
-                <tr>
-                    <th>Resumo</th>
-                    <th class="text-end">Valor</th>
-                    <th>Status</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-            @foreach (var pag in Model.Pagamentos)
-            {
-                <tr>
-                    <td>@pag.Descricao</td>
-                    <td class="text-end">@pag.Valor.ToString("C")</td>
-                    <td><span class="badge @pag.Status.BadgeClass()">@pag.Status.Texto()</span></td>
-                    <td class="text-end">
-                        <a asp-controller="Pagamentos" asp-action="Details" asp-route-id="@pag.Id" class="btn btn-sm btn-outline-primary">Ver</a>
-                    </td>
-                </tr>
-            }
-            </tbody>
-        </table>
+<!-- Two-Column Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-lg items-start">
+
+    <!-- Left Column (Main) -->
+    <div class="lg:col-span-2 flex flex-col gap-lg">
+
+        <!-- Order Header -->
+        <section class="bg-surface-container-lowest border border-outline-variant rounded-lg p-lg flex flex-col sm:flex-row sm:items-center sm:justify-between gap-md">
+            <div class="flex flex-col gap-xs">
+                <div class="flex flex-wrap items-center gap-sm">
+                    <h1 class="font-headline text-headline-lg text-on-surface tabular-nums m-0">Pedido #@Model.Id</h1>
+                    <span role="status" class="inline-flex items-center gap-xs px-sm py-xs rounded-full font-label text-label-md @PedidoBadgeClasses(Model.Status)">
+                        <span>@Model.Status.Texto()</span>
+                    </span>
+                </div>
+                <p class="font-body text-body-md text-on-surface-variant tabular-nums m-0">
+                    Aberto em @Model.DataCriacao.ToString("dd/MM/yyyy 'às' HH:mm") • Atendimento: @Model.NomeCliente
+                </p>
+            </div>
+
+            <div class="flex items-center gap-xs text-on-surface-variant">
+                <span class="font-label text-label-md text-on-surface-variant">Fluxo: Aberto → Em preparo → Pronto → Entregue</span>
+            </div>
+        </section>
+
+        <!-- Inline Bar: Add Item to Order -->
+        @if (Model.PodeEditarItens)
+        {
+            <section aria-label="Adicionar item ao pedido" class="bg-surface-container-lowest border border-outline-variant rounded-lg p-md sm:p-lg">
+                <form asp-action="AdicionarItem" asp-route-id="@Model.Id" method="post" class="grid grid-cols-1 sm:grid-cols-12 gap-sm items-end">
+                    <div class="sm:col-span-7 flex flex-col gap-xs">
+                        <label for="select-product" class="font-label text-label-md text-on-surface-variant">
+                            <span>Produto</span>
+                        </label>
+                        <select id="select-product"
+                                name="produtoId"
+                                asp-items="Model.Produtos"
+                                required
+                                class="w-full px-md py-sm bg-surface-container-lowest border border-outline-variant rounded font-body text-body-md text-on-surface focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary">
+                            <option value="">Selecione o produto...</option>
+                        </select>
+                    </div>
+
+                    <div class="sm:col-span-2 flex flex-col gap-xs">
+                        <label for="input-qty" class="font-label text-label-md text-on-surface-variant">
+                            <span>Quantidade</span>
+                        </label>
+                        <input id="input-qty"
+                               type="number"
+                               name="quantidade"
+                               min="1"
+                               max="99"
+                               value="1"
+                               required
+                               class="w-full px-sm py-sm bg-surface-container-lowest border border-outline-variant rounded font-body text-body-md text-on-surface text-center tabular-nums focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary" />
+                    </div>
+
+                    <div class="sm:col-span-3">
+                        <button type="submit"
+                                class="w-full inline-flex items-center justify-center gap-xs bg-primary text-on-primary font-label text-label-lg px-md py-sm rounded border border-primary hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-opacity duration-state-change ease-state-change whitespace-nowrap">
+                            <span>+ Adicionar item</span>
+                        </button>
+                    </div>
+                </form>
+            </section>
+        }
+
+        <!-- Order Items Table -->
+        <section aria-label="Itens do pedido">
+            <div class="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden">
+                <div class="px-md py-sm border-b border-outline-variant flex items-center justify-between">
+                    <h2 class="font-title text-title-md text-on-surface m-0">Itens do pedido</h2>
+                    <span class="font-label text-label-md text-on-surface-variant tabular-nums">
+                        @totalQtd @(totalQtd == 1 ? "item" : "itens")
+                    </span>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse m-0">
+                        <thead>
+                            <tr class="bg-surface-container-low border-b border-outline-variant">
+                                <th scope="col" class="py-sm px-md font-label text-label-md text-on-surface-variant uppercase tracking-wider">
+                                    <span>Produto</span>
+                                </th>
+                                <th scope="col" class="py-sm px-md font-label text-label-md text-on-surface-variant uppercase tracking-wider text-center w-20">
+                                    <span>Qtd</span>
+                                </th>
+                                <th scope="col" class="py-sm px-md font-label text-label-md text-on-surface-variant uppercase tracking-wider text-right w-36">
+                                    <span>Preço unit.</span>
+                                </th>
+                                <th scope="col" class="py-sm px-md font-label text-label-md text-on-surface-variant uppercase tracking-wider text-right w-28">
+                                    <span>Subtotal</span>
+                                </th>
+                                @if (Model.PodeEditarItens)
+                                {
+                                    <th scope="col" class="py-sm px-md font-label text-label-md text-on-surface-variant uppercase tracking-wider text-right w-24">
+                                        <span>Ação</span>
+                                    </th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-outline-variant">
+                        @foreach (var item in Model.Itens)
+                        {
+                            <tr class="hover:bg-surface-container-low transition-colors duration-state-change ease-state-change">
+                                <td class="py-md px-md">
+                                    <span class="font-title text-title-md text-on-surface">@item.NomeProduto</span>
+                                </td>
+                                <td class="py-md px-md text-center font-body text-body-md text-on-surface tabular-nums">
+                                    <span>@item.Quantidade</span>
+                                </td>
+                                <td class="py-md px-md text-right font-body text-body-md text-on-surface-variant tabular-nums whitespace-nowrap">
+                                    <span>@item.PrecoUnitario.ToString("C")</span>
+                                </td>
+                                <td class="py-md px-md text-right font-headline text-title-md text-on-surface tabular-nums whitespace-nowrap">
+                                    <span>@item.Subtotal.ToString("C")</span>
+                                </td>
+                                @if (Model.PodeEditarItens)
+                                {
+                                    <td class="py-md px-md text-right">
+                                        <form asp-action="RemoverItem" asp-route-id="@Model.Id" method="post" class="inline">
+                                            <input type="hidden" name="produtoId" value="@item.ProdutoId" />
+                                            <button type="submit"
+                                                    class="inline-flex items-center gap-xs px-sm py-xs rounded border border-outline-variant bg-surface-container-lowest font-label text-label-md text-on-surface-variant hover:bg-error-container hover:text-error hover:border-error-container transition-colors duration-state-change ease-state-change">
+                                                <span>Remover</span>
+                                            </button>
+                                        </form>
+                                    </td>
+                                }
+                            </tr>
+                        }
+                        @if (!Model.Itens.Any())
+                        {
+                            <tr>
+                                <td colspan="@(Model.PodeEditarItens ? 5 : 4)" class="py-xl px-md text-center font-body text-body-md text-on-surface-variant">
+                                    Nenhum item adicionado ainda.
+                                </td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+
+        <!-- Bottom Section: Pagamentos registrados -->
+        @if (Model.Pagamentos.Any())
+        {
+            <section aria-label="Pagamentos registrados" class="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden">
+                <div class="px-md py-sm border-b border-outline-variant flex items-center justify-between flex-wrap gap-sm">
+                    <h2 class="font-title text-title-md text-on-surface m-0">Pagamentos registrados</h2>
+                    <span class="font-body text-body-sm text-on-surface-variant tabular-nums">
+                        @Model.Pagamentos.Count @(Model.Pagamentos.Count == 1 ? "lançamento" : "lançamentos") • Restante: @restante.ToString("C")
+                    </span>
+                </div>
+
+                <div class="divide-y divide-outline-variant">
+                @foreach (var pag in Model.Pagamentos)
+                {
+                    <div class="px-md py-md flex flex-col sm:flex-row sm:items-center sm:justify-between gap-md hover:bg-surface-container-low transition-colors duration-state-change ease-state-change">
+                        <div class="flex items-center gap-md">
+                            <div class="w-9 h-9 rounded bg-success-container text-on-success-container flex items-center justify-center shrink-0">
+                                <span class="material-symbols-outlined text-title-md" aria-hidden="true">payments</span>
+                            </div>
+                            <div class="flex flex-col gap-xs">
+                                <span class="font-title text-title-md text-on-surface">@pag.Descricao</span>
+                                <span class="font-body text-body-sm text-on-surface-variant tabular-nums">
+                                    @pag.DataHora.ToString("dd/MM/yyyy 'às' HH:mm")
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between sm:justify-end gap-md">
+                            <span class="font-headline text-title-md text-on-surface tabular-nums whitespace-nowrap">@pag.Valor.ToString("C")</span>
+                            <span class="inline-flex items-center px-sm py-xs rounded-full font-label text-label-md @PagamentoBadgeClasses(pag.Status)">
+                                <span>@pag.Status.Texto()</span>
+                            </span>
+                            <a asp-controller="Pagamentos" asp-action="Details" asp-route-id="@pag.Id"
+                               class="inline-flex items-center gap-xs px-sm py-xs rounded border border-outline-variant bg-surface-container-lowest font-label text-label-md text-on-surface hover:bg-surface-container-low transition-colors duration-state-change ease-state-change no-underline">
+                                <span>Ver</span>
+                            </a>
+                        </div>
+                    </div>
+                }
+                </div>
+            </section>
+        }
+
     </div>
-}
 
-<div class="d-flex gap-2 mt-3">
-    @if (Model.AguardandoPagamento)
-    {
-        <span class="text-muted align-self-center">Registre o pagamento para avançar o pedido.</span>
-    }
-    @if (Model.PodeAvancar)
-    {
-        <form asp-action="AvancarStatus" asp-route-id="@Model.Id" method="post">
-            <button type="submit" class="btn btn-primary">@Model.TextoAvancar</button>
-        </form>
-    }
-    @if (Model.PodePagar)
-    {
-        <a asp-controller="Pagamentos" asp-action="Create" asp-route-pedidoId="@Model.Id" class="btn btn-success">Pagar</a>
-    }
-    @if (Model.PodeCancelar)
-    {
-        <form asp-action="Cancelar" asp-route-id="@Model.Id" method="post"
-              onsubmit="return confirm('Deseja realmente cancelar este pedido?');">
-            <button type="submit" class="btn btn-outline-danger">Cancelar pedido</button>
-        </form>
-    }
-    <a asp-action="Index" class="btn btn-outline-secondary">Voltar</a>
+    <!-- Right Column (Sidebar Summary Card) -->
+    <aside aria-label="Resumo do pedido" class="lg:col-span-1">
+        <div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-lg flex flex-col gap-lg">
+            <div class="flex items-center justify-between border-b border-outline-variant pb-md">
+                <h2 class="font-title text-title-md text-on-surface m-0">Resumo do Pedido</h2>
+                <span class="font-mono text-mono-sm text-on-surface-variant tabular-nums">#@Model.Id</span>
+            </div>
+
+            <!-- Customer Details -->
+            <div class="flex flex-col gap-sm">
+                <span class="font-label text-label-md text-on-surface-variant uppercase tracking-wider">Dados do Cliente</span>
+                <div class="bg-surface-container-low border border-outline-variant rounded-md p-md flex flex-col gap-xs">
+                    <span class="font-title text-title-md text-on-surface">@Model.NomeCliente</span>
+                    <span class="font-body text-body-sm text-on-surface-variant">Retirada no balcão</span>
+                </div>
+            </div>
+
+            <!-- Date & Totals -->
+            <div class="flex flex-col gap-sm border-t border-outline-variant pt-md">
+                <div class="flex items-center justify-between">
+                    <span class="font-body text-body-md text-on-surface-variant">Data</span>
+                    <span class="font-body text-body-md text-on-surface tabular-nums">@Model.DataCriacao.ToString("dd/MM/yyyy • HH:mm")</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="font-body text-body-md text-on-surface-variant">Subtotal</span>
+                    <span class="font-body text-body-md text-on-surface tabular-nums">@Model.Total.ToString("C")</span>
+                </div>
+                @if (totalPago > 0)
+                {
+                    <div class="flex items-center justify-between">
+                        <span class="font-body text-body-md text-on-surface-variant">Pago</span>
+                        <span class="font-body text-body-md text-success tabular-nums">- @totalPago.ToString("C")</span>
+                    </div>
+                }
+                <div class="flex items-baseline justify-between pt-sm border-t border-outline-variant">
+                    <span class="font-title text-title-md text-on-surface">Total</span>
+                    <span class="font-headline text-headline-md text-on-surface tabular-nums">@Model.Total.ToString("C")</span>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col gap-sm pt-sm border-t border-outline-variant">
+                @if (Model.AguardandoPagamento)
+                {
+                    <div class="bg-surface-container-low border border-outline-variant rounded-md px-md py-sm flex items-center gap-sm text-on-surface-variant">
+                        <span class="material-symbols-outlined text-title-md text-amber-accent shrink-0" aria-hidden="true">info</span>
+                        <span class="font-body text-body-sm">Registre o pagamento para avançar o status do pedido.</span>
+                    </div>
+                }
+
+                @if (Model.PodePagar)
+                {
+                    <a asp-controller="Pagamentos" asp-action="Create" asp-route-pedidoId="@Model.Id"
+                       class="w-full inline-flex items-center justify-center gap-sm bg-success text-on-success font-label text-label-lg px-md py-sm rounded border border-success hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-success transition-opacity duration-state-change ease-state-change no-underline">
+                        <span class="material-symbols-outlined text-title-md" aria-hidden="true">payments</span>
+                        <span>Registrar Pagamento</span>
+                    </a>
+                }
+
+                @if (Model.PodeAvancar)
+                {
+                    <form asp-action="AvancarStatus" asp-route-id="@Model.Id" method="post">
+                        <button type="submit"
+                                class="w-full inline-flex items-center justify-center gap-sm bg-primary text-on-primary font-label text-label-lg px-md py-sm rounded border border-primary hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-opacity duration-state-change ease-state-change">
+                            <span class="material-symbols-outlined text-title-md" aria-hidden="true">arrow_forward</span>
+                            <span>@Model.TextoAvancar</span>
+                        </button>
+                    </form>
+                }
+
+                @if (Model.PodeCancelar)
+                {
+                    <form asp-action="Cancelar" asp-route-id="@Model.Id" method="post"
+                          onsubmit="return confirm('Deseja realmente cancelar este pedido?');">
+                        <button type="submit"
+                                class="w-full inline-flex items-center justify-center gap-sm bg-surface-container-lowest text-error font-label text-label-lg px-md py-sm rounded border border-error hover:bg-error-container focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-error transition-colors duration-state-change ease-state-change">
+                            <span>Cancelar Pedido</span>
+                        </button>
+                    </form>
+                }
+
+                <a asp-action="Index"
+                   class="w-full inline-flex items-center justify-center gap-sm bg-surface-container-low text-on-surface font-label text-label-lg px-md py-sm rounded border border-outline-variant hover:bg-surface-container focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors duration-state-change ease-state-change no-underline">
+                    <span>Voltar para Pedidos</span>
+                </a>
+            </div>
+        </div>
+    </aside>
+
 </div>

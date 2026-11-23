@@ -1,8 +1,257 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@model BurguerQueen.Models.ViewModels.HomeDashboardViewModel
+@using BurguerQueen.Models.Enums
+@{
+    ViewData["Title"] = "Início";
+
+    string PedidoBadgeClasses(StatusPedido s) => s switch
+    {
+        StatusPedido.Aberto => "bg-surface-container text-on-surface",
+        StatusPedido.EmPreparo => "bg-secondary-container text-on-secondary-container",
+        StatusPedido.Pronto => "bg-cyan-container text-on-cyan-container",
+        StatusPedido.Entregue => "bg-success-container text-on-success-container",
+        StatusPedido.Cancelado => "bg-error-container text-on-error-container",
+        _ => "bg-surface-container text-on-surface"
+    };
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="flex flex-col gap-xl">
+
+    <!-- 1. Hero / Welcome Banner -->
+    <section aria-label="Boas-vindas" class="bg-surface-container-lowest border border-outline-variant rounded-lg p-lg sm:p-xl flex flex-col md:flex-row md:items-center md:justify-between gap-lg">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-lg">
+            <div class="w-20 h-20 rounded-full border border-outline-variant bg-surface-container-lowest overflow-hidden shrink-0 flex items-center justify-center">
+                <img src="~/images/LogoBQ.jpg"
+                     asp-append-version="true"
+                     alt="Logo Burguer Queen"
+                     class="w-full h-full object-cover" />
+            </div>
+
+            <div class="flex flex-col gap-sm">
+                <div class="flex items-center">
+                    <span class="inline-flex items-center gap-xs px-sm py-xs rounded-full bg-success-container text-on-success-container font-label text-label-md">
+                        <span class="inline-block w-2 h-2 rounded-full bg-success" aria-hidden="true"></span>
+                        <span>Balcão operando • Sistema pronto</span>
+                    </span>
+                </div>
+
+                <h1 class="font-headline text-headline-lg text-on-surface text-balance m-0">
+                    Bem-vindo ao Burguer Queen
+                </h1>
+
+                <p class="font-body text-body-lg text-on-surface-variant max-w-prose text-pretty m-0">
+                    Gerencie pedidos de balcão, cardápio artesanal e pagamentos em um só lugar.
+                </p>
+            </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-sm shrink-0">
+            <a asp-controller="Pedidos" asp-action="Create"
+               class="inline-flex items-center justify-center gap-sm bg-primary text-on-primary font-label text-label-lg px-md py-sm rounded border border-primary hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 transition-opacity duration-state-change ease-state-change whitespace-nowrap no-underline">
+                <span>+ Abrir Novo Pedido</span>
+            </a>
+
+            <a asp-controller="Produtos" asp-action="Index"
+               class="inline-flex items-center justify-center gap-sm bg-surface-container-lowest text-on-surface font-label text-label-lg px-md py-sm rounded border border-outline-variant hover:bg-surface-container-low focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors duration-state-change ease-state-change whitespace-nowrap no-underline">
+                <span>Gerenciar Cardápio</span>
+            </a>
+        </div>
+    </section>
+
+    <!-- 2. Quick Summary Bar (4 KPI cards) -->
+    <section aria-label="Resumo rápido do turno" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-md items-stretch">
+        <!-- KPI 1: Pedidos em Aberto -->
+        <a asp-controller="Pedidos" asp-action="Index" asp-route-status="@((int)StatusPedido.Aberto)"
+           class="h-full bg-surface-container-lowest border border-outline-variant rounded-md p-md flex items-center justify-between gap-md hover:bg-surface-container-low transition-colors duration-state-change ease-state-change no-underline">
+            <div class="flex flex-col gap-xs">
+                <span class="font-body text-body-sm text-on-surface-variant">Pedidos em Aberto</span>
+                <span class="font-headline text-headline-md text-on-surface tabular-nums">@Model.PedidosAbertos</span>
+            </div>
+            <div class="w-10 h-10 rounded bg-surface-container-low flex items-center justify-center text-primary shrink-0">
+                <span class="material-symbols-outlined text-headline-md" aria-hidden="true">receipt_long</span>
+            </div>
+        </a>
+
+        <!-- KPI 2: Em Preparo -->
+        <a asp-controller="Pedidos" asp-action="Index" asp-route-status="@((int)StatusPedido.EmPreparo)"
+           class="h-full bg-surface-container-lowest border border-outline-variant rounded-md p-md flex items-center justify-between gap-md hover:bg-surface-container-low transition-colors duration-state-change ease-state-change no-underline">
+            <div class="flex flex-col gap-xs">
+                <span class="font-body text-body-sm text-on-surface-variant">Em Preparo</span>
+                <span class="font-headline text-headline-md text-on-surface tabular-nums">@Model.PedidosEmPreparo</span>
+            </div>
+            <div class="w-10 h-10 rounded bg-secondary-container flex items-center justify-center text-on-secondary-container shrink-0">
+                <span class="material-symbols-outlined text-headline-md" aria-hidden="true">outdoor_grill</span>
+            </div>
+        </a>
+
+        <!-- KPI 3: Prontos para Retirada -->
+        <a asp-controller="Pedidos" asp-action="Index" asp-route-status="@((int)StatusPedido.Pronto)"
+           class="h-full bg-surface-container-lowest border border-outline-variant rounded-md p-md flex items-center justify-between gap-md hover:bg-surface-container-low transition-colors duration-state-change ease-state-change no-underline">
+            <div class="flex flex-col gap-xs">
+                <span class="font-body text-body-sm text-on-surface-variant">Prontos para Retirada</span>
+                <span class="font-headline text-headline-md text-on-surface tabular-nums">@Model.PedidosProntos</span>
+            </div>
+            <div class="w-10 h-10 rounded bg-cyan-container flex items-center justify-center text-on-cyan-container shrink-0">
+                <span class="material-symbols-outlined text-headline-md" aria-hidden="true">notifications_active</span>
+            </div>
+        </a>
+
+        <!-- KPI 4: Itens no Cardápio -->
+        <a asp-controller="Produtos" asp-action="Index"
+           class="h-full bg-surface-container-lowest border border-outline-variant rounded-md p-md flex items-center justify-between gap-md hover:bg-surface-container-low transition-colors duration-state-change ease-state-change no-underline">
+            <div class="flex flex-col gap-xs">
+                <span class="font-body text-body-sm text-on-surface-variant">Itens no Cardápio</span>
+                <span class="font-headline text-headline-md text-on-surface tabular-nums">@Model.TotalProdutos</span>
+            </div>
+            <div class="w-10 h-10 rounded bg-primary-container flex items-center justify-center text-primary shrink-0">
+                <span class="material-symbols-outlined text-headline-md" aria-hidden="true">lunch_dining</span>
+            </div>
+        </a>
+    </section>
+
+    <!-- 3. Acesso Rápido (3 clickable cards) -->
+    <section aria-labelledby="quick-access-title" class="flex flex-col gap-md">
+        <h2 id="quick-access-title" class="font-headline text-headline-md text-on-surface m-0">
+            Acesso Rápido
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-md items-stretch">
+            <!-- Card 1: Pedidos do Balcão -->
+            <a asp-controller="Pedidos" asp-action="Index"
+               class="group h-full bg-surface-container-lowest border border-outline-variant rounded-md p-lg flex flex-col justify-between gap-md hover:bg-surface-container-low transition-colors duration-state-change ease-state-change no-underline">
+                <div class="flex flex-col gap-sm">
+                    <div class="flex items-center justify-between gap-sm">
+                        <span class="w-10 h-10 rounded bg-primary-container text-primary flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-headline-md" aria-hidden="true">point_of_sale</span>
+                        </span>
+                        <span class="material-symbols-outlined text-title-md text-on-surface-variant group-hover:text-primary transition-colors duration-state-change ease-state-change" aria-hidden="true">arrow_forward</span>
+                    </div>
+                    <h3 class="font-title text-title-md text-on-surface m-0">Pedidos do Balcão</h3>
+                    <p class="font-body text-body-md text-on-surface-variant text-pretty m-0">
+                        Acompanhe a fila de preparo, adicione itens e avance o status dos pedidos.
+                    </p>
+                </div>
+            </a>
+
+            <!-- Card 2: Cardápio & Produtos -->
+            <a asp-controller="Produtos" asp-action="Index"
+               class="group h-full bg-surface-container-lowest border border-outline-variant rounded-md p-lg flex flex-col justify-between gap-md hover:bg-surface-container-low transition-colors duration-state-change ease-state-change no-underline">
+                <div class="flex flex-col gap-sm">
+                    <div class="flex items-center justify-between gap-sm">
+                        <span class="w-10 h-10 rounded bg-secondary-container text-on-secondary-container flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-headline-md" aria-hidden="true">restaurant_menu</span>
+                        </span>
+                        <span class="material-symbols-outlined text-title-md text-on-surface-variant group-hover:text-primary transition-colors duration-state-change ease-state-change" aria-hidden="true">arrow_forward</span>
+                    </div>
+                    <h3 class="font-title text-title-md text-on-surface m-0">Cardápio &amp; Produtos</h3>
+                    <p class="font-body text-body-md text-on-surface-variant text-pretty m-0">
+                        Cadastre, edite e organize lanches artesanais, adicionais e bebidas.
+                    </p>
+                </div>
+            </a>
+
+            <!-- Card 3: Clientes -->
+            <a asp-controller="Clientes" asp-action="Index"
+               class="group h-full bg-surface-container-lowest border border-outline-variant rounded-md p-lg flex flex-col justify-between gap-md hover:bg-surface-container-low transition-colors duration-state-change ease-state-change no-underline">
+                <div class="flex flex-col gap-sm">
+                    <div class="flex items-center justify-between gap-sm">
+                        <span class="w-10 h-10 rounded bg-cyan-container text-on-cyan-container flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-headline-md" aria-hidden="true">group</span>
+                        </span>
+                        <span class="material-symbols-outlined text-title-md text-on-surface-variant group-hover:text-primary transition-colors duration-state-change ease-state-change" aria-hidden="true">arrow_forward</span>
+                    </div>
+                    <h3 class="font-title text-title-md text-on-surface m-0">Clientes</h3>
+                    <p class="font-body text-body-md text-on-surface-variant text-pretty m-0">
+                        Consulte e gerencie o cadastro de clientes da hamburgueria.
+                    </p>
+                </div>
+            </a>
+        </div>
+    </section>
+
+    <!-- 4. Últimos Pedidos -->
+    <section aria-labelledby="recent-orders-title">
+        <div class="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden">
+            <div class="px-lg py-md border-b border-outline-variant flex items-center justify-between gap-md">
+                <h2 id="recent-orders-title" class="font-title text-title-md text-on-surface m-0">
+                    Últimos Pedidos
+                </h2>
+                <a asp-controller="Pedidos" asp-action="Index"
+                   class="font-label text-label-lg text-primary hover:opacity-80 transition-opacity duration-state-change ease-state-change whitespace-nowrap no-underline">
+                    <span>Ver todos os pedidos →</span>
+                </a>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse m-0">
+                    <thead>
+                        <tr class="bg-surface-container-low border-b border-outline-variant">
+                            <th scope="col" class="py-sm px-md font-label text-label-md text-on-surface-variant uppercase tracking-wider w-24">
+                                <span>Código</span>
+                            </th>
+                            <th scope="col" class="py-sm px-md font-label text-label-md text-on-surface-variant uppercase tracking-wider">
+                                <span>Cliente</span>
+                            </th>
+                            <th scope="col" class="py-sm px-md font-label text-label-md text-on-surface-variant uppercase tracking-wider w-36">
+                                <span>Horário</span>
+                            </th>
+                            <th scope="col" class="py-sm px-md font-label text-label-md text-on-surface-variant uppercase tracking-wider w-36">
+                                <span>Status</span>
+                            </th>
+                            <th scope="col" class="py-sm px-md font-label text-label-md text-on-surface-variant uppercase tracking-wider text-right w-32">
+                                <span>Total</span>
+                            </th>
+                            <th scope="col" class="py-sm px-md font-label text-label-md text-on-surface-variant uppercase tracking-wider text-right w-32">
+                                <span>Ação</span>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-outline-variant">
+                    @foreach (var pedido in Model.UltimosPedidos)
+                    {
+                        <tr class="hover:bg-surface-container-low transition-colors duration-state-change ease-state-change">
+                            <td class="py-md px-md font-mono text-mono-sm text-on-surface-variant tabular-nums">
+                                <span>#@pedido.Id</span>
+                            </td>
+                            <td class="py-md px-md font-title text-title-md text-on-surface">
+                                <span>@pedido.NomeCliente</span>
+                            </td>
+                            <td class="py-md px-md font-body text-body-md text-on-surface-variant tabular-nums">
+                                <span>@pedido.DataCriacao.ToString("dd/MM HH:mm")</span>
+                            </td>
+                            <td class="py-md px-md">
+                                <span role="status" class="inline-flex items-center px-sm py-xs rounded-full font-label text-label-md @PedidoBadgeClasses(pedido.Status)">
+                                    <span>@pedido.Status.Texto()</span>
+                                </span>
+                            </td>
+                            <td class="py-md px-md text-right font-headline text-title-md text-on-surface tabular-nums whitespace-nowrap">
+                                <span>@pedido.Total.ToString("C")</span>
+                            </td>
+                            <td class="py-md px-md text-right">
+                                <a asp-controller="Pedidos" asp-action="Details" asp-route-id="@pedido.Id"
+                                   class="inline-flex items-center justify-center gap-xs px-sm py-xs rounded border border-outline-variant bg-surface-container-lowest font-label text-label-md text-on-surface hover:bg-surface-container transition-colors duration-state-change ease-state-change no-underline">
+                                    <span>Detalhes</span>
+                                </a>
+                            </td>
+                        </tr>
+                    }
+                    @if (!Model.UltimosPedidos.Any())
+                    {
+                        <tr>
+                            <td colspan="6" class="py-xl px-md text-center">
+                                <div class="flex flex-col items-center gap-sm">
+                                    <span class="font-body text-body-md text-on-surface-variant">Nenhum pedido registrado ainda.</span>
+                                    <a asp-controller="Pedidos" asp-action="Create"
+                                       class="inline-flex items-center justify-center gap-xs bg-primary text-on-primary font-label text-label-md px-md py-xs rounded border border-primary hover:opacity-90 transition-opacity duration-state-change ease-state-change no-underline">
+                                        <span>+ Abrir primeiro pedido</span>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </section>
+
 </div>
