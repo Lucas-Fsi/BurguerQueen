@@ -15,6 +15,25 @@ public class PedidoService
         _pagamentos = pagamentos;
     }
 
+    // Avança o status do pedido (Aberto → Em preparo → Pronto → Entregue).
+    // Em qualquer etapa o pedido precisa ter um pagamento aprovado: se o pagamento
+    // for estornado ou cancelado, o pedido fica parado até ser pago de novo.
+    public async Task AvancarStatusAsync(int pedidoId)
+    {
+        var pedido = await _pedidos.ObterPorIdAsync(pedidoId)
+            ?? throw new DominioException("Pedido não encontrado.");
+
+        // Primeiro as regras do próprio pedido (itens, cancelado, entregue...),
+        // assim a mensagem de pagamento não esconde um erro mais específico
+        pedido.AvancarStatus();
+
+        var pagamentos = await _pagamentos.ObterPorPedidoAsync(pedidoId);
+        if (!pagamentos.Any(p => p.Status == StatusPagamento.Aprovado))
+            throw new DominioException("O pedido precisa ter um pagamento aprovado para avançar.");
+
+        await _pedidos.AtualizarAsync(pedido);
+    }
+
     // Cancela o pedido e acerta os pagamentos dele:
     // pagamento aprovado é estornado e pagamento pendente é cancelado.
     public async Task CancelarAsync(int pedidoId)

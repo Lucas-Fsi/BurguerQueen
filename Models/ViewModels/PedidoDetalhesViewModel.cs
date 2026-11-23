@@ -12,10 +12,17 @@ public class PedidoDetalhesViewModel
     public decimal Total { get; set; }
     public List<ItemPedidoViewModel> Itens { get; set; } = new();
     public List<SelectListItem> Produtos { get; set; } = new();
+    public List<PagamentoDetalhesViewModel> Pagamentos { get; set; } = new();
+    public bool PodePagar { get; set; }
+    public bool TemPagamentoAprovado { get; set; }
+
+    private bool EmAndamento => Status is not (StatusPedido.Entregue or StatusPedido.Cancelado);
 
     public bool PodeEditarItens => Status == StatusPedido.Aberto;
-    public bool PodeAvancar => Status is not (StatusPedido.Entregue or StatusPedido.Cancelado);
-    public bool PodeCancelar => Status is not (StatusPedido.Entregue or StatusPedido.Cancelado);
+    // Só avança com pagamento aprovado (mesma regra do PedidoService.AvancarStatusAsync)
+    public bool PodeAvancar => EmAndamento && TemPagamentoAprovado;
+    public bool AguardandoPagamento => EmAndamento && !TemPagamentoAprovado;
+    public bool PodeCancelar => EmAndamento;
 
     public string TextoAvancar => Status switch
     {

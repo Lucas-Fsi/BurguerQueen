@@ -5,6 +5,7 @@ using BurguerQueen.Models;
 using BurguerQueen.Models.Enums;
 using BurguerQueen.Models.ViewModels;
 using BurguerQueen.Repositories.Interfaces;
+using BurguerQueen.Services;
 
 namespace BurguerQueen.Controllers;
 
@@ -12,11 +13,19 @@ public class PedidosController : Controller
 {
     private readonly IPedidoRepository _pedidos;
     private readonly IProdutoRepository _produtos;
+    private readonly IPagamentoRepository _pagamentos;
+    private readonly PedidoService _pedidoService;
 
-    public PedidosController(IPedidoRepository pedidos, IProdutoRepository produtos)
+    public PedidosController(
+        IPedidoRepository pedidos,
+        IProdutoRepository produtos,
+        IPagamentoRepository pagamentos,
+        PedidoService pedidoService)
     {
         _pedidos = pedidos;
         _produtos = produtos;
+        _pagamentos = pagamentos;
+        _pedidoService = pedidoService;
     }
 
     public async Task<IActionResult> Index(StatusPedido? status)
@@ -66,15 +75,16 @@ public class PedidosController : Controller
     public Task<IActionResult> RemoverItem(int id, int produtoId)
         => Executar(id, p => p.RemoverItem(produtoId), "Item removido do pedido.");
 
+    // Avançar e cancelar passam pelo PedidoService, porque dependem dos pagamentos do pedido
     [HttpPost]
     [ValidateAntiForgeryToken]
     public Task<IActionResult> AvancarStatus(int id)
-        => Executar(id, p => p.AvancarStatus(), "Status do pedido atualizado.");
+        => ExecutarServico(id, () => _pedidoService.AvancarStatusAsync(id), "Status do pedido atualizado.");
 
     [HttpPost]
     [ValidateAntiForgeryToken]
     public Task<IActionResult> Cancelar(int id)
-        => Executar(id, p => p.Cancelar(), "Pedido cancelado.");
+        => ExecutarServico(id, () => _pedidoService.CancelarAsync(id), "Pedido cancelado.");
 
     // Carrega, aplica a regra de domínio, salva e trata DominioException em um só lugar
     private async Task<IActionResult> Executar(int id, Action<Pedido> acao, string mensagemSucesso)
@@ -96,6 +106,22 @@ public class PedidosController : Controller
         return RedirectToAction(nameof(Details), new { id });
     }
 
+    // Mesma ideia do Executar, para operações que envolvem o PedidoService
+    private async Task<IActionResult> ExecutarServico(int id, Func<Task> operacao, string mensagemSucesso)
+    {
+        try
+        {
+            await operacao();
+            TempData["Sucesso"] = mensagemSucesso;
+        }
+        catch (DominioException ex)
+        {
+            TempData["Erro"] = ex.Message;
+        }
+
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
     // ÚNICO ponto que depende do nome do método da IRepository<T>.
     // Se o seu for outro (ListarAsync, GetAllAsync...), troque só aqui.
     private Task<IEnumerable<Produto>> ListarProdutos()
@@ -104,6 +130,8 @@ public class PedidosController : Controller
     private async Task<PedidoDetalhesViewModel> MontarDetalhes(Pedido pedido)
     {
         var produtos = await ListarProdutos();
+        var pagamentos = (await _pagamentos.ObterPorPedidoAsync(pedido.Id)).ToList();
+        var temPagamentoAprovado = pagamentos.Any(p => p.Status == StatusPagamento.Aprovado);
 
         return new PedidoDetalhesViewModel
         {
@@ -122,7 +150,13 @@ public class PedidosController : Controller
             }).ToList(),
             Produtos = produtos
                 .Select(p => new SelectListItem($"{p.Nome} - {p.Preco:C}", p.Id.ToString()))
-                .ToList()
+                .ToList(),
+            Pagamentos = pagamentos.Select(PagamentoDetalhesViewModel.DeEntidade).ToList(),
+            TemPagamentoAprovado = temPagamentoAprovado,
+            // Mesmas condições do PagamentoService.ObterPedidoPagavelAsync
+            PodePagar = pedido.Status != StatusPedido.Cancelado
+                        && pedido.Total > 0
+                        && !temPagamentoAprovado
         };
     }
 }
