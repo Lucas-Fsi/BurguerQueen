@@ -1,5 +1,8 @@
 using BurguerQueen.Repositories.Dapper;
 using BurguerQueen.Repositories.Interfaces;
+using BurguerQueen.Services;
+using Microsoft.AspNetCore.Localization;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +11,11 @@ builder.Services.AddControllersWithViews();
 
 //injeção de dependencias
 builder.Services.AddScoped<IProdutoRepository, ProdutoRepository>();
+builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
+builder.Services.AddScoped<IPagamentoRepository, PagamentoRepository>();
+builder.Services.AddScoped<PagamentoService>();
+builder.Services.AddScoped<PedidoService>();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -19,6 +27,15 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+// Fixa a cultura pt-BR: valores em R$ nas views e vírgula decimal nos formulários ("50,00")
+var cultura = new CultureInfo("pt-BR");
+app.UseRequestLocalization(new RequestLocalizationOptions
+{
+    DefaultRequestCulture = new RequestCulture(cultura),
+    SupportedCultures = new List<CultureInfo> { cultura },
+    SupportedUICultures = new List<CultureInfo> { cultura }
+});
+
 app.UseRouting();
 
 app.UseAuthorization();

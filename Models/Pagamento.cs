@@ -12,9 +12,19 @@ public abstract class Pagamento
     public int PedidoId { get; private set; }
     public decimal Valor { get; protected set; }
     public DateTime DataHora { get; protected set; }
-    public StatusPagamento Status { get; protected set; } = StatusPagamento.Pendente;
+    public StatusPagamento Status { get; protected set; }
 
-    protected Pagamento(int pedidoId, decimal valor)
+    // Cada subclasse informa a sua forma; o repositório usa isso para gravar e reconstruir o pagamento
+    public abstract FormaPagamento Forma { get; }
+
+    // Os parâmetros opcionais (id, dataHora, status) servem para reconstruir um pagamento já salvo no banco.
+    // Um pagamento novo usa os padrões: Id 0, data atual e status Pendente.
+    protected Pagamento(
+        int pedidoId,
+        decimal valor,
+        int id = 0,
+        DateTime? dataHora = null,
+        StatusPagamento status = StatusPagamento.Pendente)
     {
         if (pedidoId <= 0)
             throw new DominioException("O pagamento precisa estar vinculado a um pedido.");
@@ -22,9 +32,17 @@ public abstract class Pagamento
         if (valor <= 0)
             throw new DominioException("O valor do pagamento deve ser maior que zero.");
 
+        if (id < 0)
+            throw new DominioException("O Id do pagamento não pode ser negativo.");
+
+        if (!Enum.IsDefined(status))
+            throw new DominioException("O status do pagamento é inválido.");
+
+        Id = id;
         PedidoId = pedidoId;
         Valor = valor;
-        DataHora = DateTime.Now;
+        DataHora = dataHora ?? DateTime.Now;
+        Status = status;
     }
 
     public void Confirmar()
