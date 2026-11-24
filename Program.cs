@@ -10,12 +10,14 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-//injeção de dependencias
+//injeção de dependencias (tudo antes do Build)
 builder.Services.AddScoped<IProdutoRepository, ProdutoRepository>();
+builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
 builder.Services.AddScoped<IPedidoRepository, PedidoRepository>();
 builder.Services.AddScoped<IPagamentoRepository, PagamentoRepository>();
 builder.Services.AddScoped<PagamentoService>();
 builder.Services.AddScoped<PedidoService>();
+
 var app = builder.Build();
 
 using (var conn = new SqliteConnection(builder.Configuration.GetConnectionString("DefaultConnection")))
@@ -43,9 +45,8 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-builder.Services.AddScoped<IClienteRepository, ClienteRepository>(); //injeção de dependência para o repositório de clientes
-
 app.UseHttpsRedirection();
+
 // Fixa a cultura pt-BR: valores em R$ nas views e vírgula decimal nos formulários ("50,00")
 var cultura = new CultureInfo("pt-BR");
 app.UseRequestLocalization(new RequestLocalizationOptions
@@ -65,6 +66,5 @@ app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
-
 
 app.Run();

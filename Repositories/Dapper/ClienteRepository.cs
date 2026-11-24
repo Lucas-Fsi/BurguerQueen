@@ -18,51 +18,52 @@ namespace BurguerQueen.Repositories.Dapper
 
         private IDbConnection CreateConnection() => new SqliteConnection(_connectionString);
 
-        public async Task<IEnumerable<Cliente>> GetAllAsync()
+        public async Task<IEnumerable<Cliente>> ObterTodosAsync()
         {
             const string sql = "SELECT Id, Nome, Telefone, CPF FROM Clientes ORDER BY Nome;";
             using var connection = CreateConnection();
             return await connection.QueryAsync<Cliente>(sql);
         }
 
-        public async Task<Cliente?> GetByIdAsync(string id)
+        public async Task<Cliente?> ObterPorIdAsync(int id)
         {
             const string sql = "SELECT Id, Nome, Telefone, CPF FROM Clientes WHERE Id = @Id;";
             using var connection = CreateConnection();
             return await connection.QueryFirstOrDefaultAsync<Cliente>(sql, new { Id = id });
         }
 
-        public async Task<Cliente?> GetByCpfAsync(string cpf)
+        public async Task<Cliente?> ObterPorCpfAsync(string cpf)
         {
             const string sql = "SELECT Id, Nome, Telefone, CPF FROM Clientes WHERE CPF = @CPF;";
             using var connection = CreateConnection();
             return await connection.QueryFirstOrDefaultAsync<Cliente>(sql, new { CPF = cpf });
         }
 
-        public async Task AddAsync(Cliente entity)
+        public async Task<int> AdicionarAsync(Cliente entidade)
         {
             const string sql = @"
-                INSERT INTO Clientes (Id, Nome, Telefone, CPF)
-                VALUES (@Id, @Nome, @Telefone, @CPF);";
+                INSERT INTO Clientes (Nome, Telefone, CPF)
+                VALUES (@Nome, @Telefone, @CPF);
+                SELECT last_insert_rowid();";
 
             using var connection = CreateConnection();
-            await connection.ExecuteAsync(sql, entity);
+            return await connection.ExecuteScalarAsync<int>(sql, entidade);
         }
 
-        public async Task UpdateAsync(Cliente entity)
+        public async Task AtualizarAsync(Cliente entidade)
         {
             const string sql = @"
-                UPDATE Clientes 
-                SET Nome = @Nome, 
-                    Telefone = @Telefone, 
+                UPDATE Clientes
+                SET Nome = @Nome,
+                    Telefone = @Telefone,
                     CPF = @CPF
                 WHERE Id = @Id;";
 
             using var connection = CreateConnection();
-            await connection.ExecuteAsync(sql, entity);
+            await connection.ExecuteAsync(sql, entidade);
         }
 
-        public async Task DeleteAsync(string id)
+        public async Task RemoverAsync(int id)
         {
             const string sql = "DELETE FROM Clientes WHERE Id = @Id;";
             using var connection = CreateConnection();

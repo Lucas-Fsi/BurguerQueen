@@ -18,16 +18,16 @@ namespace BurguerQueen.Controllers
         // GET: /Cliente
         public async Task<IActionResult> Index()
         {
-            var clientes = await _clienteRepository.GetAllAsync();
+            var clientes = await _clienteRepository.ObterTodosAsync();
             return View(clientes);
         }
 
         // GET: /Cliente/Details/{id}
-        public async Task<IActionResult> Details(string id)
+        public async Task<IActionResult> Details(int id)
         {
-            if (string.IsNullOrWhiteSpace(id)) return NotFound();
+            if (id <= 0) return NotFound();
 
-            var cliente = await _clienteRepository.GetByIdAsync(id);
+            var cliente = await _clienteRepository.ObterPorIdAsync(id);
             if (cliente == null)
             {
                 TempData["Erro"] = "Cliente não encontrado.";
@@ -57,11 +57,11 @@ namespace BurguerQueen.Controllers
                 var cliente = new Cliente(model.Nome, model.Telefone, model.CPF);
 
                 // Regra de negócio: não permitir CPF duplicado no banco
-                var existente = await _clienteRepository.GetByCpfAsync(cliente.CPF);
+                var existente = await _clienteRepository.ObterPorCpfAsync(cliente.CPF);
                 if (existente != null)
                     throw new DominioException("Já existe um cliente cadastrado com este CPF.");
 
-                await _clienteRepository.AddAsync(cliente);
+                await _clienteRepository.AdicionarAsync(cliente);
                 TempData["Sucesso"] = "Cliente cadastrado com sucesso!";
                 return RedirectToAction(nameof(Index));
             }
@@ -78,11 +78,11 @@ namespace BurguerQueen.Controllers
         }
 
         // GET: /Cliente/Edit/{id}
-        public async Task<IActionResult> Edit(string id)
+        public async Task<IActionResult> Edit(int id)
         {
-            if (string.IsNullOrWhiteSpace(id)) return NotFound();
+            if (id <= 0) return NotFound();
 
-            var cliente = await _clienteRepository.GetByIdAsync(id);
+            var cliente = await _clienteRepository.ObterPorIdAsync(id);
             if (cliente == null)
             {
                 TempData["Erro"] = "Cliente não encontrado.";
@@ -103,26 +103,26 @@ namespace BurguerQueen.Controllers
         // POST: /Cliente/Edit/{id}
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, ClienteViewModel model)
+        public async Task<IActionResult> Edit(int id, ClienteViewModel model)
         {
             if (id != model.Id) return BadRequest();
             if (!ModelState.IsValid) return View(model);
 
             try
             {
-                var cliente = await _clienteRepository.GetByIdAsync(id);
+                var cliente = await _clienteRepository.ObterPorIdAsync(id);
                 if (cliente == null)
                     throw new DominioException("Cliente não encontrado.");
 
                 // Verifica se o novo CPF pertence a outro cliente
-                var clienteComMesmoCpf = await _clienteRepository.GetByCpfAsync(new string(model.CPF.Where(char.IsDigit).ToArray()));
+                var clienteComMesmoCpf = await _clienteRepository.ObterPorCpfAsync(new string(model.CPF.Where(char.IsDigit).ToArray()));
                 if (clienteComMesmoCpf != null && clienteComMesmoCpf.Id != id)
                     throw new DominioException("Este CPF já está vinculado a outro cliente.");
 
-                // Atualiza via método de domínio 
+                // Atualiza via método de domínio
                 cliente.AtualizarDados(model.Nome, model.Telefone, model.CPF);
 
-                await _clienteRepository.UpdateAsync(cliente);
+                await _clienteRepository.AtualizarAsync(cliente);
                 TempData["Sucesso"] = "Cliente atualizado com sucesso!";
                 return RedirectToAction(nameof(Index));
             }
@@ -133,14 +133,13 @@ namespace BurguerQueen.Controllers
             }
         }
 
-        // POST: /Cliente/Delete/{id}
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete(string id)
+        public async Task<IActionResult> Delete(int id)
         {
             try
             {
-                await _clienteRepository.DeleteAsync(id);
+                await _clienteRepository.RemoverAsync(id);
                 TempData["Sucesso"] = "Cliente excluído com sucesso!";
             }
             catch (Exception)
