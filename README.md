@@ -31,6 +31,10 @@ Todas as telas exibem **mensagens amigáveis** de sucesso e de erro, e as regras
 | Linguagem | C# |
 | Acesso a dados | Dapper|
 
+## 📐 Diagrama de classes
+
+![Diagrama de classes do BurguerQueen](Assets/diagrama-classes.png)
+
 ## 📁 Estrutura do projeto
 
 ```
