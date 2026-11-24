@@ -43,6 +43,8 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+builder.Services.AddScoped<IClienteRepository, ClienteRepository>(); //injeção de dependência para o repositório de clientes
+
 app.UseHttpsRedirection();
 // Fixa a cultura pt-BR: valores em R$ nas views e vírgula decimal nos formulários ("50,00")
 var cultura = new CultureInfo("pt-BR");
