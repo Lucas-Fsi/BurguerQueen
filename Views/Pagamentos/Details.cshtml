@@ -1,0 +1,47 @@
+@using BurguerQueen.Models.Enums
+@model BurguerQueen.Models.ViewModels.PagamentoDetalhesViewModel
+@{
+    ViewData["Title"] = "Pagamento";
+}
+
+<h1>Pagamento #@Model.Id</h1>
+
+<dl class="row" style="max-width: 640px">
+    <dt class="col-sm-4">Pedido</dt>
+    <dd class="col-sm-8">#@Model.PedidoId</dd>
+
+    <dt class="col-sm-4">Valor</dt>
+    <dd class="col-sm-8">@Model.Valor.ToString("C")</dd>
+
+    <dt class="col-sm-4">Data</dt>
+    <dd class="col-sm-8">@Model.DataHora.ToString("dd/MM/yyyy HH:mm")</dd>
+
+    <dt class="col-sm-4">Status</dt>
+    <dd class="col-sm-8"><span class="badge @Model.Status.BadgeClass()">@Model.Status.Texto()</span></dd>
+
+    <dt class="col-sm-4">Resumo</dt>
+    <dd class="col-sm-8">@Model.Descricao</dd>
+</dl>
+
+<div class="d-flex gap-2">
+    @if (Model.PodeConfirmar)
+    {
+        <form asp-action="Confirmar" asp-route-id="@Model.Id" method="post">
+            <button type="submit" class="btn btn-success">Confirmar</button>
+        </form>
+    }
+    @if (Model.PodeCancelar)
+    {
+        <form asp-action="Cancelar" asp-route-id="@Model.Id" method="post">
+            <button type="submit" class="btn btn-outline-secondary">Cancelar pagamento</button>
+        </form>
+    }
+    @if (Model.PodeEstornar)
+    {
+        <form asp-action="Estornar" asp-route-id="@Model.Id" method="post"
+              onsubmit="return confirm('Deseja estornar este pagamento?');">
+            <button type="submit" class="btn btn-danger">Estornar</button>
+        </form>
+    }
+    <a asp-controller="Pedidos" asp-action="Details" asp-route-id="@Model.PedidoId" class="btn btn-outline-primary">Voltar ao pedido</a>
+</div>
