@@ -18,7 +18,8 @@ public class PedidoDetalhesViewModel
 
     private bool EmAndamento => Status is not (StatusPedido.Entregue or StatusPedido.Cancelado);
 
-    public bool PodeEditarItens => Status == StatusPedido.Aberto;
+    // Pedido pago não tem mais os itens alterados (mesma regra do PedidoService)
+    public bool PodeEditarItens => Status == StatusPedido.Aberto && !TemPagamentoAprovado;
     // Só avança com pagamento aprovado (mesma regra do PedidoService.AvancarStatusAsync)
     public bool PodeAvancar => EmAndamento && TemPagamentoAprovado;
     public bool AguardandoPagamento => EmAndamento && !TemPagamentoAprovado;
