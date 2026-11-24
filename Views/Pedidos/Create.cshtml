@@ -7,7 +7,8 @@
 
     <!-- Breadcrumb -->
     <nav aria-label="Breadcrumb" class="flex items-center gap-xs text-on-surface-variant">
-        <a asp-action="Index" class="font-label text-label-md text-on-surface-variant hover:text-primary transition-colors duration-state-change ease-state-change no-underline">
+        <a asp-action="Index"
+           class="font-label text-label-md text-on-surface-variant hover:text-primary transition-colors duration-state-change ease-state-change no-underline">
             <span>Pedidos</span>
         </a>
         <span class="material-symbols-outlined text-body-md text-outline" aria-hidden="true">chevron_right</span>
@@ -18,7 +19,8 @@
         <div class="px-lg pt-lg pb-md border-b border-outline-variant flex flex-col gap-xs">
             <h1 class="font-headline text-headline-lg text-on-surface m-0">Abrir Novo Pedido</h1>
             <p class="font-body text-body-md text-on-surface-variant m-0">
-                Escolha o cliente ou deixe como balcão. Na próxima etapa você poderá adicionar os lanches e bebidas e registrar o pagamento.
+                Escolha o cliente ou deixe como balcão. Na próxima etapa você poderá adicionar os lanches e bebidas e
+                registrar o pagamento.
             </p>
         </div>
 
@@ -33,34 +35,37 @@
                     </select>
                     <span class="font-body text-body-sm text-on-surface-variant">
                         Cliente não está na lista?
-                        <a asp-controller="Cliente" asp-action="Create"
-                           class="text-primary hover:underline">Cadastrar novo cliente</a>
-                    </span>
+                        <a asp-controller="Clientes" asp-action="Create" class="text-primary hover:underline">Cadastrar
+                            novo cliente</a>
+                        </span>
+                    </div>
+
+                    <div
+                        class="bg-surface-container-low border border-outline-variant rounded-md p-md flex items-center gap-md">
+                        <div
+                            class="w-10 h-10 rounded bg-primary-container text-primary flex items-center justify-center shrink-0">
+                            <span class="material-symbols-outlined text-headline-md" aria-hidden="true">receipt_long</span>
+                        </div>
+                        <div class="flex flex-col gap-xs">
+                            <span class="font-title text-title-md text-on-surface">Novo pedido</span>
+                            <span class="font-body text-body-sm text-on-surface-variant">Status inicial: Aberto</span>
+                        </div>
+                    </div>
+
                 </div>
 
-                <div class="bg-surface-container-low border border-outline-variant rounded-md p-md flex items-center gap-md">
-                    <div class="w-10 h-10 rounded bg-primary-container text-primary flex items-center justify-center shrink-0">
-                        <span class="material-symbols-outlined text-headline-md" aria-hidden="true">receipt_long</span>
-                    </div>
-                    <div class="flex flex-col gap-xs">
-                        <span class="font-title text-title-md text-on-surface">Novo pedido</span>
-                        <span class="font-body text-body-sm text-on-surface-variant">Status inicial: Aberto</span>
-                    </div>
+                <div
+                    class="px-lg py-md bg-surface-container-low border-t border-outline-variant flex items-center justify-end gap-sm">
+                    <a asp-action="Index"
+                       class="inline-flex items-center justify-center gap-sm bg-surface-container-lowest text-on-surface font-label text-label-lg px-md py-sm rounded border border-outline-variant hover:bg-surface-container transition-colors duration-state-change ease-state-change no-underline">
+                        <span>Cancelar</span>
+                    </a>
+                    <button type="submit"
+                            class="inline-flex items-center justify-center gap-sm bg-primary text-on-primary font-label text-label-lg px-md py-sm rounded border border-primary hover:opacity-90 transition-opacity duration-state-change ease-state-change">
+                        <span>Abrir pedido</span>
+                    </button>
                 </div>
+            </form>
+        </section>
 
-            </div>
-
-            <div class="px-lg py-md bg-surface-container-low border-t border-outline-variant flex items-center justify-end gap-sm">
-                <a asp-action="Index"
-                   class="inline-flex items-center justify-center gap-sm bg-surface-container-lowest text-on-surface font-label text-label-lg px-md py-sm rounded border border-outline-variant hover:bg-surface-container transition-colors duration-state-change ease-state-change no-underline">
-                    <span>Cancelar</span>
-                </a>
-                <button type="submit"
-                        class="inline-flex items-center justify-center gap-sm bg-primary text-on-primary font-label text-label-lg px-md py-sm rounded border border-primary hover:opacity-90 transition-opacity duration-state-change ease-state-change">
-                    <span>Abrir pedido</span>
-                </button>
-            </div>
-        </form>
-    </section>
-
-</div>
+    </div>
