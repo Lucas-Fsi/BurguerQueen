@@ -6,11 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace BurguerQueen.Controllers
 {
-    public class ClienteController : Controller
+    public class ClientesController : Controller
     {
         private readonly IClienteRepository _clienteRepository;
 
-        public ClienteController(IClienteRepository clienteRepository)
+        public ClientesController(IClienteRepository clienteRepository)
         {
             _clienteRepository = clienteRepository;
         }

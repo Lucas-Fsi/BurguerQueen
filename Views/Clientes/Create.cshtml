@@ -1,0 +1,71 @@
+@model BurguerQueen.Models.ViewModels.ClienteViewModel
+@{
+    ViewData["Title"] = "Novo Cliente";
+}
+
+<div class="w-full max-w-xl mx-auto flex flex-col gap-md">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="Breadcrumb" class="flex items-center gap-xs text-on-surface-variant">
+        <a asp-action="Index" class="font-label text-label-md text-on-surface-variant hover:text-primary transition-colors duration-state-change ease-state-change no-underline">
+            <span>Clientes</span>
+        </a>
+        <span class="material-symbols-outlined text-body-md text-outline" aria-hidden="true">chevron_right</span>
+        <span class="font-label text-label-md text-on-surface">Novo cliente</span>
+    </nav>
+
+    <section class="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden">
+        <div class="px-lg pt-lg pb-md border-b border-outline-variant flex flex-col gap-xs">
+            <h1 class="font-headline text-headline-lg text-on-surface m-0">Cadastrar Cliente</h1>
+            <p class="font-body text-body-md text-on-surface-variant m-0">
+                Preencha os dados abaixo. O CPF é usado para identificar o cliente e não pode se repetir.
+            </p>
+        </div>
+
+        <form asp-action="Create" method="post" class="flex flex-col">
+            <div class="p-lg flex flex-col gap-md">
+
+                <div asp-validation-summary="ModelOnly"
+                     class="bg-error-container text-on-error-container font-body text-body-md rounded-md p-md"></div>
+
+                <div class="flex flex-col gap-xs">
+                    <label asp-for="Nome" class="font-label text-label-lg text-on-surface">Nome</label>
+                    <input asp-for="Nome"
+                           class="w-full bg-surface-container-lowest text-on-surface font-body text-body-md px-md py-sm rounded border border-outline-variant focus:border-primary focus:outline-none" />
+                    <span asp-validation-for="Nome" class="font-body text-body-sm text-error"></span>
+                </div>
+
+                <div class="flex flex-col gap-xs">
+                    <label asp-for="Telefone" class="font-label text-label-lg text-on-surface">Telefone</label>
+                    <input asp-for="Telefone" placeholder="(16) 99999-9999"
+                           class="w-full bg-surface-container-lowest text-on-surface font-body text-body-md px-md py-sm rounded border border-outline-variant focus:border-primary focus:outline-none" />
+                    <span asp-validation-for="Telefone" class="font-body text-body-sm text-error"></span>
+                </div>
+
+                <div class="flex flex-col gap-xs">
+                    <label asp-for="CPF" class="font-label text-label-lg text-on-surface">CPF</label>
+                    <input asp-for="CPF" placeholder="000.000.000-00"
+                           class="w-full bg-surface-container-lowest text-on-surface font-body text-body-md px-md py-sm rounded border border-outline-variant focus:border-primary focus:outline-none" />
+                    <span asp-validation-for="CPF" class="font-body text-body-sm text-error"></span>
+                </div>
+
+            </div>
+
+            <div class="px-lg py-md bg-surface-container-low border-t border-outline-variant flex items-center justify-end gap-sm">
+                <a asp-action="Index"
+                   class="inline-flex items-center justify-center gap-sm bg-surface-container-lowest text-on-surface font-label text-label-lg px-md py-sm rounded border border-outline-variant hover:bg-surface-container transition-colors duration-state-change ease-state-change no-underline">
+                    <span>Cancelar</span>
+                </a>
+                <button type="submit"
+                        class="inline-flex items-center justify-center gap-sm bg-primary text-on-primary font-label text-label-lg px-md py-sm rounded border border-primary hover:opacity-90 transition-opacity duration-state-change ease-state-change">
+                    <span>Salvar cliente</span>
+                </button>
+            </div>
+        </form>
+    </section>
+
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

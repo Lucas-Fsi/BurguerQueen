@@ -14,17 +14,20 @@ public class PedidosController : Controller
     private readonly IPedidoRepository _pedidos;
     private readonly IProdutoRepository _produtos;
     private readonly IPagamentoRepository _pagamentos;
+    private readonly IClienteRepository _clientes;
     private readonly PedidoService _pedidoService;
 
     public PedidosController(
         IPedidoRepository pedidos,
         IProdutoRepository produtos,
         IPagamentoRepository pagamentos,
+        IClienteRepository clientes,
         PedidoService pedidoService)
     {
         _pedidos = pedidos;
         _produtos = produtos;
         _pagamentos = pagamentos;
+        _clientes = clientes;
         _pedidoService = pedidoService;
     }
 
@@ -34,14 +37,21 @@ public class PedidosController : Controller
         return View(await _pedidos.ListarAsync(status));
     }
 
-    public IActionResult Create() => View();
+    public async Task<IActionResult> Create()
+        => View(await PreencherClientes(new PedidoCreateViewModel()));
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> CriarPedido()
+    public async Task<IActionResult> CriarPedido(PedidoCreateViewModel vm)
     {
-        // Sem cliente por enquanto: pedido de balcão
-        var id = await _pedidos.CriarAsync(new Pedido(null));
+        // ClienteId nulo = pedido de balcão
+        if (vm.ClienteId.HasValue && await _clientes.ObterPorIdAsync(vm.ClienteId.Value) is null)
+        {
+            TempData["Erro"] = "Cliente não encontrado.";
+            return RedirectToAction(nameof(Create));
+        }
+
+        var id = await _pedidos.CriarAsync(new Pedido(vm.ClienteId));
         TempData["Sucesso"] = "Pedido aberto! Agora adicione os itens.";
         return RedirectToAction(nameof(Details), new { id });
     }
@@ -102,6 +112,15 @@ public class PedidosController : Controller
         return RedirectToAction(nameof(Details), new { id });
     }
 
+    private async Task<PedidoCreateViewModel> PreencherClientes(PedidoCreateViewModel vm)
+    {
+        var clientes = await _clientes.ObterTodosAsync();
+        vm.Clientes = clientes
+            .Select(c => new SelectListItem($"{c.Nome} ({c.CPF})", c.Id.ToString()))
+            .ToList();
+        return vm;
+    }
+
     // ÚNICO ponto que depende do nome do método da IRepository<T>.
     // Se o seu for outro (ListarAsync, GetAllAsync...), troque só aqui.
     private Task<IEnumerable<Produto>> ListarProdutos()
@@ -113,10 +132,17 @@ public class PedidosController : Controller
         var pagamentos = (await _pagamentos.ObterPorPedidoAsync(pedido.Id)).ToList();
         var temPagamentoAprovado = pagamentos.Any(p => p.Status == StatusPagamento.Aprovado);
 
+        var nomeCliente = "Balcão";
+        if (pedido.ClienteId.HasValue)
+        {
+            var cliente = await _clientes.ObterPorIdAsync(pedido.ClienteId.Value);
+            if (cliente is not null) nomeCliente = cliente.Nome;
+        }
+
         return new PedidoDetalhesViewModel
         {
             Id = pedido.Id,
-            NomeCliente = "Balcão",   // trocar quando a entidade Cliente existir
+            NomeCliente = nomeCliente,
             Status = pedido.Status,
             DataCriacao = pedido.DataCriacao,
             Total = pedido.Total,

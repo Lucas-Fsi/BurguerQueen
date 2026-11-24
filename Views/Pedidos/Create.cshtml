@@ -1,3 +1,4 @@
+@model BurguerQueen.Models.ViewModels.PedidoCreateViewModel
 @{
     ViewData["Title"] = "Novo Pedido";
 }
@@ -17,21 +18,36 @@
         <div class="px-lg pt-lg pb-md border-b border-outline-variant flex flex-col gap-xs">
             <h1 class="font-headline text-headline-lg text-on-surface m-0">Abrir Novo Pedido</h1>
             <p class="font-body text-body-md text-on-surface-variant m-0">
-                O pedido será aberto no balcão. Na próxima etapa você poderá adicionar os lanches e bebidas e registrar o pagamento.
+                Escolha o cliente ou deixe como balcão. Na próxima etapa você poderá adicionar os lanches e bebidas e registrar o pagamento.
             </p>
         </div>
 
         <form asp-action="CriarPedido" method="post" class="flex flex-col">
-            <div class="p-lg">
+            <div class="p-lg flex flex-col gap-md">
+
+                <div class="flex flex-col gap-xs">
+                    <label asp-for="ClienteId" class="font-label text-label-lg text-on-surface">Cliente</label>
+                    <select asp-for="ClienteId" asp-items="Model.Clientes"
+                            class="w-full bg-surface-container-lowest text-on-surface font-body text-body-md px-md py-sm rounded border border-outline-variant focus:border-primary focus:outline-none">
+                        <option value="">Balcão (sem cliente)</option>
+                    </select>
+                    <span class="font-body text-body-sm text-on-surface-variant">
+                        Cliente não está na lista?
+                        <a asp-controller="Cliente" asp-action="Create"
+                           class="text-primary hover:underline">Cadastrar novo cliente</a>
+                    </span>
+                </div>
+
                 <div class="bg-surface-container-low border border-outline-variant rounded-md p-md flex items-center gap-md">
                     <div class="w-10 h-10 rounded bg-primary-container text-primary flex items-center justify-center shrink-0">
                         <span class="material-symbols-outlined text-headline-md" aria-hidden="true">receipt_long</span>
                     </div>
                     <div class="flex flex-col gap-xs">
-                        <span class="font-title text-title-md text-on-surface">Atendimento no balcão</span>
+                        <span class="font-title text-title-md text-on-surface">Novo pedido</span>
                         <span class="font-body text-body-sm text-on-surface-variant">Status inicial: Aberto</span>
                     </div>
                 </div>
+
             </div>
 
             <div class="px-lg py-md bg-surface-container-low border-t border-outline-variant flex items-center justify-end gap-sm">
