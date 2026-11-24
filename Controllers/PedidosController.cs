@@ -54,6 +54,7 @@ public class PedidosController : Controller
         return View(await MontarDetalhes(pedido));
     }
 
+    // As ações abaixo passam pelo PedidoService, porque as regras dependem dos pagamentos do pedido
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> AdicionarItem(int id, int produtoId, int quantidade)
@@ -65,17 +66,16 @@ public class PedidosController : Controller
             return RedirectToAction(nameof(Details), new { id });
         }
 
-        return await Executar(id,
-            p => p.AdicionarItem(produto.Id, produto.Nome, produto.Preco, quantidade),
+        return await ExecutarServico(id,
+            () => _pedidoService.AdicionarItemAsync(id, produto.Id, produto.Nome, produto.Preco, quantidade),
             "Item adicionado ao pedido.");
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
     public Task<IActionResult> RemoverItem(int id, int produtoId)
-        => Executar(id, p => p.RemoverItem(produtoId), "Item removido do pedido.");
+        => ExecutarServico(id, () => _pedidoService.RemoverItemAsync(id, produtoId), "Item removido do pedido.");
 
-    // Avançar e cancelar passam pelo PedidoService, porque dependem dos pagamentos do pedido
     [HttpPost]
     [ValidateAntiForgeryToken]
     public Task<IActionResult> AvancarStatus(int id)
@@ -86,27 +86,7 @@ public class PedidosController : Controller
     public Task<IActionResult> Cancelar(int id)
         => ExecutarServico(id, () => _pedidoService.CancelarAsync(id), "Pedido cancelado.");
 
-    // Carrega, aplica a regra de domínio, salva e trata DominioException em um só lugar
-    private async Task<IActionResult> Executar(int id, Action<Pedido> acao, string mensagemSucesso)
-    {
-        var pedido = await _pedidos.ObterPorIdAsync(id);
-        if (pedido is null) return NotFound();
-
-        try
-        {
-            acao(pedido);
-            await _pedidos.AtualizarAsync(pedido);
-            TempData["Sucesso"] = mensagemSucesso;
-        }
-        catch (DominioException ex)
-        {
-            TempData["Erro"] = ex.Message;
-        }
-
-        return RedirectToAction(nameof(Details), new { id });
-    }
-
-    // Mesma ideia do Executar, para operações que envolvem o PedidoService
+    // Executa a operação do serviço, trata DominioException em um só lugar e volta para o pedido
     private async Task<IActionResult> ExecutarServico(int id, Func<Task> operacao, string mensagemSucesso)
     {
         try
