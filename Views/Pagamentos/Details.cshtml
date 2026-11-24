@@ -6,15 +6,6 @@
 
 <h1>Pagamento #@Model.Id</h1>
 
-@if (TempData["Sucesso"] is string sucesso)
-{
-    <div class="alert alert-success">@sucesso</div>
-}
-@if (TempData["Erro"] is string erro)
-{
-    <div class="alert alert-danger">@erro</div>
-}
-
 <dl class="row" style="max-width: 640px">
     <dt class="col-sm-4">Pedido</dt>
     <dd class="col-sm-8">#@Model.PedidoId</dd>
