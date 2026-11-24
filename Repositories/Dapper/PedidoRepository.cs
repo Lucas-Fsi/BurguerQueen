@@ -21,7 +21,7 @@ public class PedidoRepository : IPedidoRepository
                COALESCE(c.Nome, 'Balcão') AS NomeCliente,
                p.Status,
                p.DataCriacao,
-               COALESCE(SUM(i.Quantidade * i.PrecoUnitario), 0) AS Total
+               CAST(COALESCE(SUM(i.Quantidade * i.PrecoUnitario), 0.0) AS REAL) AS Total
         FROM Pedidos p
         LEFT JOIN Clientes c ON c.Id = p.ClienteId
         LEFT JOIN ItensPedido i ON i.PedidoId = p.Id
