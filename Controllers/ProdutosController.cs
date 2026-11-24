@@ -9,7 +9,7 @@ namespace BurguerQueen.Controllers;
 
 // responsável APENAS por orquestrar o fluxo HTTP
 // (receber requisições, chamar o repositório e devolver a View ou redirecionamento)
-// Não possui comandos SQL nem regras de negócio — tudo isso fica isolado no Repository e nas Models
+
 public class ProdutosController : Controller
 {
     // Dependência da interface não da classe em si: facilita manutenção

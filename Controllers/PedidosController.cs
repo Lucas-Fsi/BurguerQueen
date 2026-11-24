@@ -122,7 +122,6 @@ public class PedidosController : Controller
     }
 
     // ÚNICO ponto que depende do nome do método da IRepository<T>.
-    // Se o seu for outro (ListarAsync, GetAllAsync...), troque só aqui.
     private Task<IEnumerable<Produto>> ListarProdutos()
         => _produtos.ObterTodosAsync();
 

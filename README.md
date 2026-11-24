@@ -6,7 +6,13 @@ Este é um projeto para a matéria de POO de análise e desenvolvimento de siste
 
 O **BurguerQueen** é uma aplicação web que substitui o controle de pedidos feito no papel ou de cabeça. Com ele, o atendente cadastra produtos e clientes, abre pedidos com vários itens, acompanha o andamento de cada um (Aberto, Em preparo, Pronto, Entregue ou Cancelado) e registra o pagamento, com cálculo automático de total e de troco.
 
----
+## Equipe
+
+- Lucas Cunha Barbosa - RA: 2840482511027
+- Víctor Gabriel Souza Campesi - RA: 2840482511033
+- Leonardo Sousa Gomes de Araujo - RA: 2840482511018
+- Jéssica Bianchi Vieira da Silva - RA: 2840482511014
+
 
 ## 🎯 Visão geral
 
@@ -19,56 +25,71 @@ O sistema permite que o atendente de uma lanchonete:
 
 Todas as telas exibem **mensagens amigáveis** de sucesso e de erro, e as regras de negócio são validadas dentro das próprias entidades de domínio.
 
----
-
 ## 🛠 Tecnologias
 
 | Framework | ASP.NET Core MVC (.NET 10) |
 | Linguagem | C# |
 | Acesso a dados | Dapper|
 
----
-
 ## 📁 Estrutura do projeto
 
 ```
 BurguerQueen/
+├── Assets/
+│   └── LogoBQ.jpg
+│
 ├── Controllers/                 # Apenas orquestram o fluxo (sem regra de negócio e sem SQL)
-│   ├── HomeController.cs
-│   ├── ProdutosController.cs
 │   ├── ClientesController.cs
+│   ├── HomeController.cs
+│   ├── PagamentosController.cs
 │   ├── PedidosController.cs
-│   └── PagamentosController.cs
+│   └── ProdutosController.cs
 │
 ├── Models/                      # Entidades de domínio
-│   ├── Produto.cs
-│   ├── Lanche.cs
 │   ├── Bebida.cs
+│   ├── Cartao.cs
 │   ├── Cliente.cs
-│   ├── Pedido.cs
+│   ├── Dinheiro.cs
+│   ├── ErrorViewModel.cs
 │   ├── ItemPedido.cs
+│   ├── Lanche.cs
 │   ├── Pagamento.cs
-│   ├── Enums/                   # StatusPedido, FormaPagamento, TipoProduto
+│   ├── Pedido.cs
+│   ├── Pix.cs
+│   ├── Produto.cs
+│   ├── Enums/                   # FormaPagamento, StatusPagamento, StatusPedido, TipoCartao, TipoProduto e extensões
 │   └── ViewModels/              # Modelos das telas, com Data Annotations
 │
 ├── Repositories/
-│   ├── Interfaces/              # IProdutoRepository, IClienteRepository, ...
+│   ├── Interfaces/              # IRepository, IClienteRepository, IPagamentoRepository, IPedidoRepository, IProdutoRepository
 │   └── Dapper/                  # Implementações com SQL parametrizado
+│
+├── Services/                    # Regras que coordenam mais de uma entidade (ex.: Pedido e Pagamento)
+│   ├── PagamentoService.cs
+│   └── PedidoService.cs
 │
 ├── Exceptions/
 │   └── DominioException.cs      # Exceção para violações de regra de negócio
 │
 ├── Views/
-│   ├── Shared/                  # _Layout.cshtml, _ValidationScriptsPartial.cshtml
-│   ├── Produtos/                # Index, Create, Edit, Details, Delete
-│   ├── Clientes/
-│   ├── Pedidos/
-│   └── Pagamentos/
+│   ├── _ViewImports.cshtml
+│   ├── _ViewStart.cshtml
+│   ├── Clientes/                # Create, Details, Edit, Index
+│   ├── Home/                    # Index, Privacy
+│   ├── Pagamentos/              # Create, Details
+│   ├── Pedidos/                 # Create, Details, Index
+│   ├── Produtos/                # Create, Delete, Details, Edit, Index
+│   └── Shared/                  # _Layout.cshtml, _ValidationScriptsPartial.cshtml, Error.cshtml
 │
 ├── Database/
 │   └── script.sql               # DDL (tabelas) + DML (dados de teste)
 │
+├── Properties/
+│   └── launchSettings.json
+│
 ├── appsettings.json             # Connection string
+├── appsettings.Development.json
+├── BurguerQueen.csproj
 └── Program.cs                   # Injeção de dependência e pipeline HTTP
 ```
 
@@ -76,7 +97,7 @@ BurguerQueen/
 
 ### Pré-requisitos
 
-* [.NET SDK 8.0 ou superior](https://dotnet.microsoft.com/download) instalado.
+* [.NET SDK 10.0 ou superior](https://dotnet.microsoft.com/download) instalado.
 * Visual Studio Code, Visual Studio 2022 ou Rider.
 
 ### Passo a passo no terminal
