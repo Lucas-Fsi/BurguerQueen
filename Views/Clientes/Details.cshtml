@@ -1,0 +1,14 @@
+@model BurguerQueen.Models.Cliente
+@{ ViewData["Title"] = "Detalhes do cliente"; }
+
+<h2>@Model.Nome</h2>
+
+<div class="card mb-3" style="max-width: 480px;">
+    <div class="card-body">
+        <p class="mb-1"><strong>Telefone:</strong> @Model.Telefone</p>
+        <p class="mb-0"><strong>CPF:</strong> @Model.CPF</p>
+    </div>
+</div>
+
+<a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-outline-secondary">Editar</a>
+<a asp-action="Index" class="btn btn-outline-primary">Voltar</a>

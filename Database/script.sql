@@ -14,13 +14,24 @@ CREATE TABLE IF NOT EXISTS Produtos (
 );
 
 -- =====================
+-- Clientes
+-- =====================
+CREATE TABLE IF NOT EXISTS Clientes (
+    Id        INTEGER PRIMARY KEY AUTOINCREMENT,
+    Nome      TEXT NOT NULL,
+    Telefone  TEXT NULL,
+    CPF       TEXT NOT NULL UNIQUE
+);
+
+-- =====================
 -- Pedidos
 -- =====================
 CREATE TABLE IF NOT EXISTS Pedidos (
     Id           INTEGER PRIMARY KEY AUTOINCREMENT,
     ClienteId    INTEGER NULL,
     Status       INTEGER NOT NULL DEFAULT 0,
-    DataCriacao  TEXT    NOT NULL
+    DataCriacao  TEXT    NOT NULL,
+    FOREIGN KEY (ClienteId) REFERENCES Clientes(Id)
 );
 
 CREATE TABLE IF NOT EXISTS ItensPedido (
@@ -46,7 +57,6 @@ INSERT INTO Produtos (Nome, Preco, Tipo, Descricao, Adicionais, Tamanho) VALUES
 ('Refrigerante Guaraná', 7.00, 2, NULL, NULL, 350),
 ('Suco Natural de Laranja', 11.90, 2, NULL, NULL, 500),
 ('Milkshake de Chocolate', 18.50, 2, NULL, NULL, 400);
-
 
 -- =====================
 -- Tabela de pagamentos (uma tabela para todas as formas de pagamento)

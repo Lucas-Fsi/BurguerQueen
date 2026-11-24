@@ -14,18 +14,19 @@ public class PedidoRepository : IPedidoRepository
     public PedidoRepository(IConfiguration config)
         => _connectionString = config.GetConnectionString("DefaultConnection")!;
 
-   public async Task<IEnumerable<PedidoListaViewModel>> ListarAsync(StatusPedido? status)
+ public async Task<IEnumerable<PedidoListaViewModel>> ListarAsync(StatusPedido? status)
 {
     const string sql = @"
         SELECT p.Id,
-               'Balcão' AS NomeCliente,
+               COALESCE(c.Nome, 'Balcão') AS NomeCliente,
                p.Status,
                p.DataCriacao,
                COALESCE(SUM(i.Quantidade * i.PrecoUnitario), 0) AS Total
         FROM Pedidos p
+        LEFT JOIN Clientes c ON c.Id = p.ClienteId
         LEFT JOIN ItensPedido i ON i.PedidoId = p.Id
         WHERE (@Status IS NULL OR p.Status = @Status)
-        GROUP BY p.Id, p.Status, p.DataCriacao
+        GROUP BY p.Id, c.Nome, p.Status, p.DataCriacao
         ORDER BY p.Id DESC";
 
     using var conn = new SqliteConnection(_connectionString);
