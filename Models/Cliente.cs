@@ -4,7 +4,7 @@ namespace BurguerQueen.Models
 {
     public class Cliente
     {
-        public string Id { get; private set; } = string.Empty;
+        public int Id { get; private set; }
         public string Nome { get; private set; } = string.Empty;
         public string Telefone { get; private set; } = string.Empty;
         public string CPF { get; private set; } = string.Empty;
@@ -13,7 +13,6 @@ namespace BurguerQueen.Models
 
         public Cliente(string nome, string telefone, string cpf) //garantindo validade 
         {
-            Id = Guid.NewGuid().ToString();
             AtualizarDados(nome, telefone, cpf);
         }
 

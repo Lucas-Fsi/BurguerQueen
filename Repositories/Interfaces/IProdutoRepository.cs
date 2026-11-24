@@ -10,4 +10,5 @@ public interface IProdutoRepository : IRepository<Produto>
 {
     //task que permite filtrar o cardapio por lanche ou bebidas 
     Task<IEnumerable<Produto>> ObterPorTipoAsync(TipoProduto tipo);
+    
 }

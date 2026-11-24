@@ -1,0 +1,251 @@
+@model IEnumerable<BurguerQueen.Models.Produto>
+@using BurguerQueen.Models
+@using BurguerQueen.Models.Enums
+@{
+    ViewData["Title"] = "Cardápio & Produtos";
+    var tipoSelecionado = (TipoProduto?)ViewBag.TipoSelecionado;
+    var listaProdutos = Model.ToList();
+    int totalProdutos = ViewBag.TotalProdutos ?? listaProdutos.Count;
+    int totalLanches = ViewBag.TotalLanches ?? listaProdutos.Count(p => p.Tipo == TipoProduto.Lanche);
+    int totalBebidas = ViewBag.TotalBebidas ?? listaProdutos.Count(p => p.Tipo == TipoProduto.Bebida);
+
+    string PillClass(bool ativo) => ativo
+        ? "filter-pill inline-flex items-center gap-xs px-md py-xs rounded-full bg-on-surface text-surface-container-lowest font-label text-label-md border border-on-surface transition-colors duration-state-change ease-state-change no-underline"
+        : "filter-pill inline-flex items-center gap-xs px-md py-xs rounded-full bg-surface-container-lowest text-on-surface-variant font-label text-label-md border border-outline-variant hover:bg-surface-container-low hover:text-on-surface transition-colors duration-state-change ease-state-change no-underline";
+}
+
+<!-- 1. Page Header -->
+<section class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-md">
+    <div class="flex flex-col gap-xs">
+        <h1 class="font-headline text-headline-lg text-on-surface text-balance m-0">Cardápio &amp; Produtos</h1>
+        <p class="font-body text-body-md text-on-surface-variant text-pretty m-0">
+            Gerencie lanches, bebidas, adicionais e preços exibidos no balcão.
+        </p>
+    </div>
+
+    <div class="shrink-0">
+        <a asp-action="Create"
+           class="inline-flex items-center justify-center gap-sm bg-primary text-on-primary font-label text-label-lg px-md py-sm rounded border border-primary hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 transition-opacity duration-state-change ease-state-change no-underline">
+            <span>+ Novo produto</span>
+        </a>
+    </div>
+</section>
+
+<!-- 2. Discrete KPI Summary Bar -->
+<section aria-label="Resumo do cardápio" class="grid grid-cols-1 sm:grid-cols-3 gap-md items-stretch">
+    <article class="h-full bg-surface-container-lowest border border-outline-variant rounded-md p-md flex items-center justify-between gap-md">
+        <div class="flex flex-col gap-xs">
+            <span class="font-body text-body-sm text-on-surface-variant">Total de produtos</span>
+            <span class="font-headline text-headline-md text-on-surface tabular-nums">@totalProdutos</span>
+        </div>
+        <div class="w-10 h-10 rounded bg-surface-container-low flex items-center justify-center text-primary shrink-0">
+            <span class="material-symbols-outlined text-headline-md" aria-hidden="true">inventory_2</span>
+        </div>
+    </article>
+
+    <article class="h-full bg-surface-container-lowest border border-outline-variant rounded-md p-md flex items-center justify-between gap-md">
+        <div class="flex flex-col gap-xs">
+            <span class="font-body text-body-sm text-on-surface-variant">Lanches</span>
+            <span class="font-headline text-headline-md text-on-surface tabular-nums">@totalLanches</span>
+        </div>
+        <div class="w-10 h-10 rounded bg-secondary-container flex items-center justify-center text-on-secondary-container shrink-0">
+            <span class="material-symbols-outlined text-headline-md" aria-hidden="true">lunch_dining</span>
+        </div>
+    </article>
+
+    <article class="h-full bg-surface-container-lowest border border-outline-variant rounded-md p-md flex items-center justify-between gap-md">
+        <div class="flex flex-col gap-xs">
+            <span class="font-body text-body-sm text-on-surface-variant">Bebidas</span>
+            <span class="font-headline text-headline-md text-on-surface tabular-nums">@totalBebidas</span>
+        </div>
+        <div class="w-10 h-10 rounded bg-cyan-container flex items-center justify-center text-on-cyan-container shrink-0">
+            <span class="material-symbols-outlined text-headline-md" aria-hidden="true">local_drink</span>
+        </div>
+    </article>
+</section>
+
+<!-- 3. Filter Pills & Quick Search -->
+<section aria-label="Filtros e busca" class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-md">
+    <div role="tablist" aria-label="Filtrar por categoria" class="flex flex-wrap items-center gap-sm">
+        <a asp-action="Index"
+           role="tab"
+           aria-selected="@(tipoSelecionado is null ? "true" : "false")"
+           class="@PillClass(tipoSelecionado is null)">
+            <span>Todos</span>
+        </a>
+        <a asp-action="Index"
+           asp-route-tipo="@((int)TipoProduto.Lanche)"
+           role="tab"
+           aria-selected="@(tipoSelecionado == TipoProduto.Lanche ? "true" : "false")"
+           class="@PillClass(tipoSelecionado == TipoProduto.Lanche)">
+            <span>Lanches</span>
+        </a>
+        <a asp-action="Index"
+           asp-route-tipo="@((int)TipoProduto.Bebida)"
+           role="tab"
+           aria-selected="@(tipoSelecionado == TipoProduto.Bebida ? "true" : "false")"
+           class="@PillClass(tipoSelecionado == TipoProduto.Bebida)">
+            <span>Bebidas</span>
+        </a>
+    </div>
+
+    <form role="search" onsubmit="return false;" class="relative w-full sm:w-72">
+        <span class="material-symbols-outlined text-title-md text-on-surface-variant absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" aria-hidden="true">search</span>
+        <input id="search-input-01"
+               type="search"
+               aria-label="Buscar produto por nome"
+               placeholder="Buscar produto por nome..."
+               class="w-full pl-10 pr-md py-sm bg-surface-container-lowest border border-outline-variant rounded font-body text-body-md text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors duration-state-change ease-state-change" />
+    </form>
+</section>
+
+<!-- 4. Product Catalog Table -->
+<section aria-label="Lista de produtos">
+    <div class="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse m-0">
+                <thead>
+                    <tr class="bg-surface-container-low border-b border-outline-variant">
+                        <th scope="col" class="py-sm px-md font-label text-label-md text-on-surface-variant uppercase tracking-wider w-20">
+                            <span>Código</span>
+                        </th>
+                        <th scope="col" class="py-sm px-md font-label text-label-md text-on-surface-variant uppercase tracking-wider">
+                            <span>Produto</span>
+                        </th>
+                        <th scope="col" class="py-sm px-md font-label text-label-md text-on-surface-variant uppercase tracking-wider w-28">
+                            <span>Tipo</span>
+                        </th>
+                        <th scope="col" class="py-sm px-md font-label text-label-md text-on-surface-variant uppercase tracking-wider text-right w-32">
+                            <span>Preço</span>
+                        </th>
+                        <th scope="col" class="py-sm px-md font-label text-label-md text-on-surface-variant uppercase tracking-wider text-right w-40">
+                            <span>Ações</span>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody id="product-table-body" class="divide-y divide-outline-variant">
+                @foreach (var produto in listaProdutos)
+                {
+                    string resumo = produto switch
+                    {
+                        Lanche l when !string.IsNullOrWhiteSpace(l.Adicionais) => $"{l.Descricao} • Adicionais: {l.Adicionais}",
+                        Lanche l => l.Descricao,
+                        Bebida b => $"{b.Tamanho} ml",
+                        _ => produto.Detalhes()
+                    };
+
+                    var badgeClasses = produto.Tipo == TipoProduto.Lanche
+                        ? "bg-secondary-container text-on-secondary-container"
+                        : "bg-cyan-container text-on-cyan-container";
+
+                    <tr data-category="@produto.Tipo"
+                        data-name="@produto.Nome"
+                        data-details="@resumo"
+                        class="product-row hover:bg-surface-container-low transition-colors duration-state-change ease-state-change">
+                        <td class="py-md px-md align-top font-mono text-mono-sm text-on-surface-variant tabular-nums">
+                            <span>#@produto.Id</span>
+                        </td>
+                        <td class="py-md px-md align-top">
+                            <div class="flex flex-col gap-xs">
+                                <span class="font-title text-title-md text-on-surface">@produto.Nome</span>
+                                <span class="font-body text-body-sm text-on-surface-variant text-pretty">@resumo</span>
+                            </div>
+                        </td>
+                        <td class="py-md px-md align-top">
+                            <span role="status" class="inline-flex items-center px-sm py-xs rounded-full font-label text-label-md @badgeClasses">
+                                <span>@produto.Tipo</span>
+                            </span>
+                        </td>
+                        <td class="py-md px-md align-top text-right font-headline text-title-md text-on-surface tabular-nums whitespace-nowrap">
+                            <span>@produto.Preco.ToString("C")</span>
+                        </td>
+                        <td class="py-md px-md align-top text-right">
+                            <div class="inline-flex items-center justify-end gap-xs">
+                                <a asp-action="Details" asp-route-id="@produto.Id"
+                                   title="Detalhes"
+                                   aria-label="Detalhes de @produto.Nome"
+                                   class="inline-flex items-center justify-center w-8 h-8 rounded border border-outline-variant bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors duration-state-change ease-state-change no-underline">
+                                    <span class="material-symbols-outlined text-title-md" aria-hidden="true">visibility</span>
+                                </a>
+                                <a asp-action="Edit" asp-route-id="@produto.Id"
+                                   title="Editar"
+                                   aria-label="Editar @produto.Nome"
+                                   class="inline-flex items-center justify-center w-8 h-8 rounded border border-outline-variant bg-surface-container-lowest text-on-surface-variant hover:bg-surface-container-low hover:text-on-surface transition-colors duration-state-change ease-state-change no-underline">
+                                    <span class="material-symbols-outlined text-title-md" aria-hidden="true">edit</span>
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@produto.Id"
+                                   title="Excluir"
+                                   aria-label="Excluir @produto.Nome"
+                                   class="inline-flex items-center justify-center w-8 h-8 rounded border border-outline-variant bg-surface-container-lowest text-on-surface-variant hover:bg-error-container hover:text-error hover:border-error-container transition-colors duration-state-change ease-state-change no-underline">
+                                    <span class="material-symbols-outlined text-title-md" aria-hidden="true">delete</span>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="@(listaProdutos.Any() ? "hidden" : "flex") py-2xl px-md text-center flex-col items-center gap-sm">
+            <span class="material-symbols-outlined text-headline-lg text-on-surface-variant" aria-hidden="true">search_off</span>
+            <p class="font-body text-body-md text-on-surface-variant m-0">
+                Nenhum produto encontrado para o filtro selecionado.
+            </p>
+            @if (tipoSelecionado is not null)
+            {
+                <a asp-action="Index"
+                   class="px-md py-xs rounded border border-outline-variant bg-surface-container-lowest font-label text-label-md text-on-surface hover:bg-surface-container-low no-underline">
+                    <span>Ver todos os produtos</span>
+                </a>
+            }
+            else
+            {
+                <button type="button" id="reset-filters-btn"
+                        class="px-md py-xs rounded border border-outline-variant bg-surface-container-lowest font-label text-label-md text-on-surface hover:bg-surface-container-low">
+                    <span>Limpar busca</span>
+                </button>
+            }
+        </div>
+    </div>
+</section>
+
+@section Scripts {
+    <script>
+        (function () {
+            var searchInput = document.getElementById('search-input-01');
+            var rows = document.querySelectorAll('.product-row');
+            var emptyState = document.getElementById('empty-state');
+            var resetBtn = document.getElementById('reset-filters-btn');
+
+            if (!searchInput || rows.length === 0) return;
+
+            function applySearch() {
+                var query = (searchInput.value || '').trim().toLowerCase();
+                var visibleCount = 0;
+
+                rows.forEach(function (row) {
+                    var name = (row.getAttribute('data-name') || '').toLowerCase();
+                    var details = (row.getAttribute('data-details') || '').toLowerCase();
+                    var matches = !query || name.indexOf(query) !== -1 || details.indexOf(query) !== -1;
+
+                    row.classList.toggle('hidden', !matches);
+                    if (matches) visibleCount++;
+                });
+
+                emptyState.classList.toggle('hidden', visibleCount > 0);
+                emptyState.classList.toggle('flex', visibleCount === 0);
+            }
+
+            searchInput.addEventListener('input', applySearch);
+
+            if (resetBtn) {
+                resetBtn.addEventListener('click', function () {
+                    searchInput.value = '';
+                    applySearch();
+                });
+            }
+        })();
+    </script>
+}

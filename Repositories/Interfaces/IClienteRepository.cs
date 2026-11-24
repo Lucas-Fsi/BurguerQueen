@@ -1,9 +1,8 @@
 using BurguerQueen.Models;
 
-namespace BurguerQueen.Repositories.Interfaces
+namespace BurguerQueen.Repositories.Interfaces;
+
+public interface IClienteRepository : IRepository<Cliente>
 {
-    public interface IClienteRepository : IRepository<Cliente>
-    {
-        Task<Cliente?> GetByCpfAsync(string cpf);
-    }
+    Task<Cliente?> ObterPorCpfAsync(string cpf);
 }

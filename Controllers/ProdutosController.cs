@@ -28,12 +28,17 @@ public class ProdutosController : Controller
     {
         try
         {
+            var todosProdutos = (await this._produtoRepository.ObterTodosAsync()).ToList();
+
             var produtos = tipo.HasValue
                 ? await this._produtoRepository.ObterPorTipoAsync(tipo.Value)
-                : await this._produtoRepository.ObterTodosAsync();
+                : todosProdutos;
 
-            // Guarda o filtro atual para a View poder destacar qual aba/botão está selecionado.
+            // Guarda o filtro atual e os totais para a View exibir KPIs e destacar a aba selecionada.
             ViewBag.TipoSelecionado = tipo;
+            ViewBag.TotalProdutos = todosProdutos.Count;
+            ViewBag.TotalLanches = todosProdutos.Count(p => p.Tipo == TipoProduto.Lanche);
+            ViewBag.TotalBebidas = todosProdutos.Count(p => p.Tipo == TipoProduto.Bebida);
 
             return View(produtos);
         }
@@ -41,6 +46,9 @@ public class ProdutosController : Controller
         {
             // Evita tela de erro 500 e exibe erro amigável caso o banco ainda não esteja criado
             TempData["Erro"] = "Não foi possível carregar os produtos no momento.";
+            ViewBag.TotalProdutos = 0;
+            ViewBag.TotalLanches = 0;
+            ViewBag.TotalBebidas = 0;
             return View(Enumerable.Empty<BurguerQueen.Models.Produto>());
         }
     }

@@ -1,0 +1,70 @@
+@model BurguerQueen.Models.Produto
+@using BurguerQueen.Models.Enums
+@{
+    ViewData["Title"] = $"Excluir Produto #{Model.Id}";
+    var badgeClasses = Model.Tipo == TipoProduto.Lanche
+        ? "bg-secondary-container text-on-secondary-container"
+        : "bg-cyan-container text-on-cyan-container";
+}
+
+<div class="w-full max-w-2xl mx-auto flex flex-col gap-md">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="Breadcrumb" class="flex items-center gap-xs text-on-surface-variant">
+        <a asp-action="Index" class="font-label text-label-md text-on-surface-variant hover:text-primary transition-colors duration-state-change ease-state-change no-underline">
+            <span>Produtos</span>
+        </a>
+        <span class="material-symbols-outlined text-body-md text-outline" aria-hidden="true">chevron_right</span>
+        <span class="font-label text-label-md text-on-surface">Excluir #@Model.Id</span>
+    </nav>
+
+    <section class="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden">
+        <!-- Header -->
+        <div class="px-lg pt-lg pb-md border-b border-outline-variant flex items-center gap-sm">
+            <div class="w-10 h-10 rounded bg-error-container text-error flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-headline-md" aria-hidden="true">warning</span>
+            </div>
+            <div class="flex flex-col gap-xs">
+                <h1 class="font-headline text-headline-lg text-on-surface m-0">Excluir Produto</h1>
+                <p class="font-body text-body-md text-on-surface-variant m-0">
+                    Tem certeza que deseja remover este item do cardápio? Esta ação não pode ser desfeita.
+                </p>
+            </div>
+        </div>
+
+        <!-- Product Summary -->
+        <div class="p-lg flex flex-col gap-md">
+            <div class="bg-surface-container-low border border-outline-variant rounded-md p-md flex flex-col gap-sm">
+                <div class="flex items-center justify-between gap-md">
+                    <div class="flex items-center gap-sm">
+                        <span class="font-mono text-mono-sm text-on-surface-variant">#@Model.Id</span>
+                        <span class="font-title text-title-md text-on-surface">@Model.Nome</span>
+                    </div>
+                    <span class="font-headline text-title-md text-on-surface tabular-nums">@Model.Preco.ToString("C")</span>
+                </div>
+                <div class="flex items-center gap-sm">
+                    <span class="inline-flex items-center px-sm py-xs rounded-full font-label text-label-md @badgeClasses">
+                        @Model.Tipo
+                    </span>
+                    <span class="font-body text-body-sm text-on-surface-variant">@Model.Detalhes()</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Actions -->
+        <form asp-action="Delete" asp-route-id="@Model.Id" method="post"
+              class="px-lg py-md bg-surface-container-low border-t border-outline-variant flex items-center justify-end gap-sm">
+            <input type="hidden" asp-for="Id" />
+            <a asp-action="Index"
+               class="inline-flex items-center justify-center gap-sm bg-surface-container-lowest text-on-surface font-label text-label-lg px-md py-sm rounded border border-outline-variant hover:bg-surface-container transition-colors duration-state-change ease-state-change no-underline">
+                <span>Cancelar</span>
+            </a>
+            <button type="submit"
+                    class="inline-flex items-center justify-center gap-xs bg-error text-on-error font-label text-label-lg px-md py-sm rounded border border-error hover:opacity-90 transition-opacity duration-state-change ease-state-change">
+                <span class="material-symbols-outlined text-title-md" aria-hidden="true">delete</span>
+                <span>Confirmar exclusão</span>
+            </button>
+        </form>
+    </section>
+
+</div>

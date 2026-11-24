@@ -1,49 +1,196 @@
-﻿<!DOCTYPE html>
-<html lang="pt-br">
+@{
+    var currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    bool IsNavActive(string controller) =>
+        string.Equals(currentController, controller, StringComparison.OrdinalIgnoreCase)
+        || (string.Equals(controller, "Pedidos", StringComparison.OrdinalIgnoreCase)
+            && string.Equals(currentController, "Pagamentos", StringComparison.OrdinalIgnoreCase));
+
+    string NavClass(string controller) =>
+        IsNavActive(controller)
+            ? "inline-flex items-center h-full px-sm sm:px-md border-b-2 border-primary font-label text-label-lg text-primary no-underline"
+            : "inline-flex items-center h-full px-sm sm:px-md border-b-2 border-transparent font-label text-label-lg text-on-surface-variant hover:text-on-surface transition-colors duration-state-change ease-state-change no-underline";
+}
+<!DOCTYPE html>
+<html lang="pt-BR">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - Burguer Queen</title>
+    <title>@ViewData["Title"] — Burguer Queen</title>
+
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <script src="https://cdn.tailwindcss.com?plugins=container-queries"></script>
+    <script id="tailwind-config">
+        globalThis.tailwind = globalThis.tailwind || {};
+        globalThis.tailwind.config = {
+            important: true,
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        'primary': '#C81E1E',
+                        'on-primary': '#FFFFFF',
+                        'primary-container': '#FFEDEA',
+                        'on-primary-container': '#690005',
+                        'amber-accent': '#D97706',
+                        'secondary-container': '#FFEDE3',
+                        'on-secondary-container': '#6E3900',
+                        'cyan-container': '#DDF4FF',
+                        'on-cyan-container': '#004E61',
+                        'success': '#15803D',
+                        'on-success': '#FFFFFF',
+                        'success-container': '#E8F8ED',
+                        'on-success-container': '#005323',
+                        'error': '#BA1A1A',
+                        'on-error': '#FFFFFF',
+                        'error-container': '#FFEDEA',
+                        'on-error-container': '#690005',
+                        'surface': '#FAF8F5',
+                        'surface-container-lowest': '#FFFFFF',
+                        'surface-container-low': '#F4EFE8',
+                        'surface-container': '#EFE9E0',
+                        'on-surface': '#1F1A17',
+                        'on-surface-variant': '#645D59',
+                        'outline': '#B3A9A5',
+                        'outline-variant': '#EAE4DC',
+                    },
+                    borderRadius: {
+                        'sm': '6px',
+                        'DEFAULT': '8px',
+                        'md': '12px',
+                        'lg': '16px',
+                        'full': '9999px',
+                    },
+                    spacing: {
+                        'xs': '4px',
+                        'sm': '8px',
+                        'md': '16px',
+                        'lg': '24px',
+                        'xl': '32px',
+                        '2xl': '48px',
+                    },
+                    fontFamily: {
+                        'display': ['"Plus Jakarta Sans"', 'sans-serif'],
+                        'headline': ['"Plus Jakarta Sans"', 'sans-serif'],
+                        'title': ['"Plus Jakarta Sans"', 'sans-serif'],
+                        'body': ['"Instrument Sans"', 'sans-serif'],
+                        'label': ['"Instrument Sans"', 'sans-serif'],
+                        'mono': ['"Red Hat Mono"', 'monospace'],
+                    },
+                    fontSize: {
+                        'display-lg': ['36px', { lineHeight: '44px', letterSpacing: '-0.75px', fontWeight: '800' }],
+                        'display-lg-mobile': ['28px', { lineHeight: '36px', letterSpacing: '-0.5px', fontWeight: '800' }],
+                        'headline-lg': ['28px', { lineHeight: '34px', letterSpacing: '-0.5px', fontWeight: '700' }],
+                        'headline-md': ['22px', { lineHeight: '28px', letterSpacing: '-0.25px', fontWeight: '700' }],
+                        'title-md': ['16px', { lineHeight: '22px', letterSpacing: '0px', fontWeight: '600' }],
+                        'body-lg': ['15px', { lineHeight: '22px', letterSpacing: '0px', fontWeight: '400' }],
+                        'body-md': ['14px', { lineHeight: '20px', letterSpacing: '0px', fontWeight: '400' }],
+                        'body-sm': ['13px', { lineHeight: '18px', letterSpacing: '0px', fontWeight: '400' }],
+                        'label-lg': ['14px', { lineHeight: '20px', letterSpacing: '0px', fontWeight: '600' }],
+                        'label-md': ['12px', { lineHeight: '16px', letterSpacing: '0.25px', fontWeight: '600' }],
+                        'mono-sm': ['13px', { lineHeight: '18px', letterSpacing: '0px', fontWeight: '500' }],
+                    },
+                    transitionDuration: {
+                        'state-change': '120ms',
+                        'surface-enter': '200ms',
+                    },
+                    transitionTimingFunction: {
+                        'state-change': 'ease-out',
+                        'surface-enter': 'cubic-bezier(0.2, 0, 0, 1)',
+                    },
+                },
+            },
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&family=Red+Hat+Mono:wght@500&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=block" rel="stylesheet" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
 </head>
-<body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
-        <div class="container">
-            <a class="navbar-brand" asp-controller="Home" asp-action="Index">🍔 Burguer Queen</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menu">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="menu">
-                <ul class="navbar-nav me-auto">
-                    <li class="nav-item"><a class="nav-link" asp-controller="Pedidos" asp-action="Index">Pedidos</a></li>
-                    <li class="nav-item"><a class="nav-link" asp-controller="Produtos" asp-action="Index">Produtos</a></li>
-                    <li class="nav-item"><a class="nav-link" asp-controller="Clientes" asp-action="Index">Clientes</a></li>
-                </ul>
-            </div>
-        </div>
-    </nav>
+<body class="bg-surface text-on-surface font-body antialiased m-0">
+    <div class="min-h-screen flex flex-col">
 
-    <main class="container pb-4">
-        @if (TempData["Sucesso"] is string sucesso)
-        {
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                @sucesso
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        }
-        @if (TempData["Erro"] is string erro)
-        {
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                @erro
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-            </div>
-        }
+        <!-- Top Navigation Bar (App Shell) -->
+        <header class="sticky top-0 z-30 bg-surface-container-lowest border-b border-outline-variant">
+            <div class="max-w-[1200px] mx-auto px-md sm:px-lg lg:px-xl h-16 flex items-center justify-between gap-lg">
+                <a asp-controller="Home" asp-action="Index"
+                   class="flex items-center gap-sm text-on-surface hover:opacity-90 transition-opacity duration-state-change ease-state-change no-underline">
+                    <span class="w-10 h-10 rounded-full bg-primary-container border border-outline-variant flex items-center justify-center shrink-0 overflow-hidden">
+                        <img src="~/images/LogoBQ.jpg"
+                             asp-append-version="true"
+                             alt="Logo Burguer Queen"
+                             class="w-full h-full object-cover" />
+                    </span>
+                    <span class="font-headline text-title-md text-on-surface tracking-tight">Burguer Queen</span>
+                </a>
 
-        @RenderBody()
-    </main>
+                <nav aria-label="Navegação principal" class="flex items-center gap-xs sm:gap-sm h-full">
+                    <a asp-controller="Home" asp-action="Index"
+                       aria-current="@(IsNavActive("Home") ? "page" : null)"
+                       class="@NavClass("Home")">
+                        <span>Início</span>
+                    </a>
+                    <a asp-controller="Pedidos" asp-action="Index"
+                       aria-current="@(IsNavActive("Pedidos") ? "page" : null)"
+                       class="@NavClass("Pedidos")">
+                        <span>Pedidos</span>
+                    </a>
+                    <a asp-controller="Produtos" asp-action="Index"
+                       aria-current="@(IsNavActive("Produtos") ? "page" : null)"
+                       class="@NavClass("Produtos")">
+                        <span>Produtos</span>
+                    </a>
+                    <a asp-controller="Clientes" asp-action="Index"
+                       aria-current="@(IsNavActive("Clientes") ? "page" : null)"
+                       class="@NavClass("Clientes")">
+                        <span>Clientes</span>
+                    </a>
+                </nav>
+            </div>
+        </header>
 
-    <footer class="text-center text-muted small pb-3">Burguer Queen - trabalho acadêmico</footer>
+        <!-- Main Content -->
+        <main class="flex-1 w-full max-w-[1200px] mx-auto px-md sm:px-lg lg:px-xl py-lg sm:py-xl flex flex-col gap-lg">
+            @if (TempData["Sucesso"] is string sucesso)
+            {
+                <div id="feedback-sucesso" role="status" aria-live="polite"
+                     class="bg-success-container border border-outline-variant rounded-md px-md py-sm flex items-center justify-between gap-md">
+                    <div class="flex items-center gap-sm text-on-success-container">
+                        <span class="material-symbols-outlined text-title-md text-success shrink-0" style="font-variation-settings: 'FILL' 1;" aria-hidden="true">check_circle</span>
+                        <span class="font-body text-body-md text-on-success-container">@sucesso</span>
+                    </div>
+                    <button type="button" onclick="this.parentElement.remove()" aria-label="Fechar aviso"
+                            class="inline-flex items-center justify-center w-7 h-7 rounded text-on-success-container hover:bg-surface-container-lowest transition-colors duration-state-change ease-state-change">
+                        <span class="material-symbols-outlined text-title-md" aria-hidden="true">close</span>
+                    </button>
+                </div>
+            }
+            @if (TempData["Erro"] is string erro)
+            {
+                <div id="feedback-erro" role="alert" aria-live="assertive"
+                     class="bg-error-container border border-outline-variant rounded-md px-md py-sm flex items-center justify-between gap-md">
+                    <div class="flex items-center gap-sm text-on-error-container">
+                        <span class="material-symbols-outlined text-title-md text-error shrink-0" style="font-variation-settings: 'FILL' 1;" aria-hidden="true">error</span>
+                        <span class="font-body text-body-md text-on-error-container">@erro</span>
+                    </div>
+                    <button type="button" onclick="this.parentElement.remove()" aria-label="Fechar aviso"
+                            class="inline-flex items-center justify-center w-7 h-7 rounded text-on-error-container hover:bg-surface-container-lowest transition-colors duration-state-change ease-state-change">
+                        <span class="material-symbols-outlined text-title-md" aria-hidden="true">close</span>
+                    </button>
+                </div>
+            }
+
+            @RenderBody()
+        </main>
+
+        <!-- Discrete Footer -->
+        <footer class="border-t border-outline-variant bg-surface-container-lowest mt-auto">
+            <div class="max-w-[1200px] mx-auto px-md sm:px-lg lg:px-xl py-md flex items-center justify-between">
+                <p class="font-body text-body-sm text-on-surface-variant m-0">
+                    Burguer Queen • Sistema de Gestão
+                </p>
+            </div>
+        </footer>
+
+    </div>
 
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>

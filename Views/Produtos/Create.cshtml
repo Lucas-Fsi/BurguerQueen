@@ -1,0 +1,231 @@
+@model BurguerQueen.Models.ViewModels.ProdutoViewModel
+@using BurguerQueen.Models.Enums
+@{
+    ViewData["Title"] = "Cadastrar Produto";
+    var tipoInicial = Model.Tipo == TipoProduto.Bebida ? TipoProduto.Bebida : TipoProduto.Lanche;
+    var ehLanche = tipoInicial == TipoProduto.Lanche;
+}
+
+<div class="w-full max-w-2xl mx-auto flex flex-col gap-md">
+
+    <!-- Breadcrumb -->
+    <nav aria-label="Breadcrumb" class="flex items-center gap-xs text-on-surface-variant">
+        <a asp-action="Index" class="font-label text-label-md text-on-surface-variant hover:text-primary transition-colors duration-state-change ease-state-change no-underline">
+            <span>Produtos</span>
+        </a>
+        <span class="material-symbols-outlined text-body-md text-outline" aria-hidden="true">chevron_right</span>
+        <span class="font-label text-label-md text-on-surface">Novo produto</span>
+    </nav>
+
+    <!-- Centered Form Card -->
+    <section aria-labelledby="form-title" class="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden">
+        <!-- Card Header -->
+        <div class="px-lg pt-lg pb-md border-b border-outline-variant flex flex-col gap-xs">
+            <h1 id="form-title" class="font-headline text-headline-lg text-on-surface text-balance m-0">
+                Cadastrar Produto
+            </h1>
+            <p class="font-body text-body-md text-on-surface-variant text-pretty m-0">
+                Preencha as informações abaixo para incluir um novo item no cardápio do balcão.
+            </p>
+        </div>
+
+        <!-- Form Body -->
+        <form asp-action="Create" method="post" class="flex flex-col">
+            <div class="p-lg flex flex-col gap-lg">
+                <div asp-validation-summary="ModelOnly" class="bg-error-container border border-outline-variant rounded-md px-md py-sm font-body text-body-md text-on-error-container"></div>
+
+                <!-- Row 1: Nome do Produto & Preço (R$) -->
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-md">
+                    <div class="sm:col-span-2 flex flex-col gap-xs">
+                        <label asp-for="Nome" class="font-label text-label-lg text-on-surface"></label>
+                        <input asp-for="Nome"
+                               type="text"
+                               placeholder="Ex.: Queen Bacon Smash"
+                               class="w-full px-md py-sm bg-surface-container-lowest border border-outline-variant rounded font-body text-body-md text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors duration-state-change ease-state-change" />
+                        <span asp-validation-for="Nome" class="font-body text-body-sm text-error"></span>
+                    </div>
+
+                    <div class="sm:col-span-1 flex flex-col gap-xs">
+                        <label asp-for="Preco" class="font-label text-label-lg text-on-surface"></label>
+                        <div class="relative flex items-center">
+                            <span class="absolute left-3 font-label text-label-lg text-on-surface-variant pointer-events-none select-none">R$</span>
+                            <input asp-for="Preco"
+                                   type="text"
+                                   inputmode="decimal"
+                                   placeholder="0,00"
+                                   value="@(Model.Preco > 0 ? Model.Preco.ToString("F2") : "")"
+                                   class="w-full pl-10 pr-md py-sm bg-surface-container-lowest border border-outline-variant rounded font-headline text-title-md text-on-surface text-right tabular-nums placeholder:text-on-surface-variant focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors duration-state-change ease-state-change" />
+                        </div>
+                        <span asp-validation-for="Preco" class="font-body text-body-sm text-error"></span>
+                    </div>
+                </div>
+
+                <!-- Row 2: Tipo do Produto (Segmented Control) -->
+                <div class="flex flex-col gap-xs">
+                    <span class="font-label text-label-lg text-on-surface">Tipo do Produto</span>
+                    <input type="hidden" asp-for="Tipo" id="tipo-produto" value="@((int)tipoInicial)" />
+
+                    <div role="radiogroup" aria-label="Tipo do Produto" class="grid grid-cols-2 gap-sm p-xs bg-surface-container-low border border-outline-variant rounded-md">
+                        <button type="button"
+                                role="radio"
+                                aria-checked="@(ehLanche ? "true" : "false")"
+                                data-tipo="@((int)TipoProduto.Lanche)"
+                                class="type-segment flex items-center justify-center gap-sm py-sm px-md rounded font-label text-label-lg transition-colors duration-state-change ease-state-change @(ehLanche ? "bg-surface-container-lowest border border-outline-variant text-on-surface" : "bg-transparent border border-transparent text-on-surface-variant hover:text-on-surface")">
+                            <span class="material-symbols-outlined text-title-md text-amber-accent" aria-hidden="true">lunch_dining</span>
+                            <span>Lanche</span>
+                        </button>
+
+                        <button type="button"
+                                role="radio"
+                                aria-checked="@(!ehLanche ? "true" : "false")"
+                                data-tipo="@((int)TipoProduto.Bebida)"
+                                class="type-segment flex items-center justify-center gap-sm py-sm px-md rounded font-label text-label-lg transition-colors duration-state-change ease-state-change @(!ehLanche ? "bg-surface-container-lowest border border-outline-variant text-on-surface" : "bg-transparent border border-transparent text-on-surface-variant hover:text-on-surface")">
+                            <span class="material-symbols-outlined text-title-md text-on-cyan-container" aria-hidden="true">local_drink</span>
+                            <span>Bebida</span>
+                        </button>
+                    </div>
+                    <span asp-validation-for="Tipo" class="font-body text-body-sm text-error"></span>
+                </div>
+
+                <!-- Row 3: Dynamic Highlighted Section for Selected Type -->
+                <div class="bg-surface-container-low border border-outline-variant rounded-md p-md sm:p-lg flex flex-col gap-md">
+                    <div class="flex items-center justify-between gap-sm pb-sm border-b border-outline-variant">
+                        <div class="flex items-center gap-sm">
+                            <span id="dynamic-section-badge" class="inline-flex items-center px-sm py-xs rounded-full font-label text-label-md @(ehLanche ? "bg-secondary-container text-on-secondary-container" : "bg-cyan-container text-on-cyan-container")">
+                                <span id="dynamic-badge-text">@(ehLanche ? "Lanche" : "Bebida")</span>
+                            </span>
+                            <h2 id="dynamic-section-title" class="font-title text-title-md text-on-surface m-0">
+                                @(ehLanche ? "Detalhes do Lanche" : "Detalhes da Bebida")
+                            </h2>
+                        </div>
+                        <span class="font-body text-body-sm text-on-surface-variant hidden sm:inline">
+                            Campos específicos do tipo selecionado
+                        </span>
+                    </div>
+
+                    <!-- Lanche Fields -->
+                    <div id="fields-lanche" data-tipo="@((int)TipoProduto.Lanche)" class="@(ehLanche ? "flex" : "hidden") flex-col gap-md">
+                        <div class="flex flex-col gap-xs">
+                            <label asp-for="Descricao" class="font-label text-label-lg text-on-surface"></label>
+                            <textarea asp-for="Descricao"
+                                      rows="3"
+                                      placeholder="Ex.: Pão brioche, hambúrguer artesanal 150g, queijo cheddar derretido e molho especial da casa"
+                                      class="w-full px-md py-sm bg-surface-container-lowest border border-outline-variant rounded font-body text-body-md text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors duration-state-change ease-state-change"></textarea>
+                            <span asp-validation-for="Descricao" class="font-body text-body-sm text-error"></span>
+                        </div>
+
+                        <div class="flex flex-col gap-xs">
+                            <div class="flex items-baseline justify-between gap-sm">
+                                <label asp-for="Adicionais" class="font-label text-label-lg text-on-surface"></label>
+                                <span class="font-body text-body-sm text-on-surface-variant">Opcional</span>
+                            </div>
+                            <input asp-for="Adicionais"
+                                   type="text"
+                                   placeholder="Ex.: Bacon, Cheddar extra, Ovo, Cebola crispy"
+                                   class="w-full px-md py-sm bg-surface-container-lowest border border-outline-variant rounded font-body text-body-md text-on-surface placeholder:text-on-surface-variant focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors duration-state-change ease-state-change" />
+                            <span asp-validation-for="Adicionais" class="font-body text-body-sm text-error"></span>
+                        </div>
+
+                        <p class="font-body text-body-sm text-on-surface-variant flex items-center gap-xs pt-xs m-0">
+                            <span class="material-symbols-outlined text-body-lg text-on-surface-variant" aria-hidden="true">info</span>
+                            <span>Ao selecionar <strong>Bebida</strong> acima, esta seção exibe apenas o campo <strong>Tamanho (ml)</strong>.</span>
+                        </p>
+                    </div>
+
+                    <!-- Bebida Fields -->
+                    <div id="fields-bebida" data-tipo="@((int)TipoProduto.Bebida)" class="@(!ehLanche ? "flex" : "hidden") flex-col gap-md">
+                        <div class="flex flex-col gap-xs">
+                            <label asp-for="Tamanho" class="font-label text-label-lg text-on-surface"></label>
+                            <div class="relative flex items-center">
+                                <input asp-for="Tamanho"
+                                       type="text"
+                                       inputmode="decimal"
+                                       placeholder="Ex.: 350"
+                                       class="w-full pl-md pr-12 py-sm bg-surface-container-lowest border border-outline-variant rounded font-body text-body-md text-on-surface tabular-nums placeholder:text-on-surface-variant focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors duration-state-change ease-state-change" />
+                                <span class="absolute right-3 font-label text-label-md text-on-surface-variant pointer-events-none select-none">ml</span>
+                            </div>
+                            <span asp-validation-for="Tamanho" class="font-body text-body-sm text-error"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card Footer Actions -->
+            <div class="px-lg py-md bg-surface-container-low border-t border-outline-variant flex items-center justify-end gap-sm">
+                <a asp-action="Index"
+                   class="inline-flex items-center justify-center gap-sm bg-surface-container-lowest text-on-surface font-label text-label-lg px-md py-sm rounded border border-outline-variant hover:bg-surface-container focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary transition-colors duration-state-change ease-state-change no-underline">
+                    <span>Cancelar</span>
+                </a>
+
+                <button type="submit"
+                        class="inline-flex items-center justify-center gap-sm bg-primary text-on-primary font-label text-label-lg px-md py-sm rounded border border-primary hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 transition-opacity duration-state-change ease-state-change">
+                    <span>Cadastrar produto</span>
+                </button>
+            </div>
+        </form>
+    </section>
+
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+    <script>
+        (function () {
+            var inputTipo = document.getElementById('tipo-produto');
+            var segments = document.querySelectorAll('.type-segment');
+            var fieldsLanche = document.getElementById('fields-lanche');
+            var fieldsBebida = document.getElementById('fields-bebida');
+            var badge = document.getElementById('dynamic-section-badge');
+            var badgeText = document.getElementById('dynamic-badge-text');
+            var sectionTitle = document.getElementById('dynamic-section-title');
+
+            function setBlockEnabled(block, enabled) {
+                block.classList.toggle('hidden', !enabled);
+                block.classList.toggle('flex', enabled);
+                block.querySelectorAll('input, textarea, select').forEach(function (field) {
+                    field.disabled = !enabled;
+                });
+            }
+
+            function selectType(valor) {
+                inputTipo.value = valor;
+                var ehLanche = valor === '@((int)TipoProduto.Lanche)';
+
+                segments.forEach(function (item) {
+                    var isCurrent = item.getAttribute('data-tipo') === valor;
+                    item.setAttribute('aria-checked', isCurrent ? 'true' : 'false');
+                    if (isCurrent) {
+                        item.classList.remove('bg-transparent', 'border-transparent', 'text-on-surface-variant');
+                        item.classList.add('bg-surface-container-lowest', 'border-outline-variant', 'text-on-surface');
+                    } else {
+                        item.classList.remove('bg-surface-container-lowest', 'border-outline-variant', 'text-on-surface');
+                        item.classList.add('bg-transparent', 'border-transparent', 'text-on-surface-variant');
+                    }
+                });
+
+                setBlockEnabled(fieldsLanche, ehLanche);
+                setBlockEnabled(fieldsBebida, !ehLanche);
+
+                if (ehLanche) {
+                    badge.classList.remove('bg-cyan-container', 'text-on-cyan-container');
+                    badge.classList.add('bg-secondary-container', 'text-on-secondary-container');
+                    badgeText.textContent = 'Lanche';
+                    sectionTitle.textContent = 'Detalhes do Lanche';
+                } else {
+                    badge.classList.remove('bg-secondary-container', 'text-on-secondary-container');
+                    badge.classList.add('bg-cyan-container', 'text-on-cyan-container');
+                    badgeText.textContent = 'Bebida';
+                    sectionTitle.textContent = 'Detalhes da Bebida';
+                }
+            }
+
+            segments.forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    selectType(btn.getAttribute('data-tipo'));
+                });
+            });
+
+            selectType(inputTipo.value || '@((int)TipoProduto.Lanche)');
+        })();
+    </script>
+}
